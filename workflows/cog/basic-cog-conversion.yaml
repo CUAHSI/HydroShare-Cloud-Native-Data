@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: tif-to-cog-
+  namespace: argo
+spec:
+  entrypoint: tif2cog
+  templates:
+  - name: tif2cog
+    inputs:
+      artifacts:
+        - name: input_tif
+          path: /tmp/input.tif
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: hydrodem_03N_03c.tif
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    container:
+      image: cuahsi/tif2cog:latest
+      args: ["-i", "/tmp/input.tif", "-o", "/tmp/output.tif"]
+    outputs:
+      artifacts:
+        - name: output_cog
+          path: /tmp
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: output.tif
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey

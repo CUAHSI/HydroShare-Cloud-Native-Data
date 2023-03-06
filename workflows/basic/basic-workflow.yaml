@@ -1,0 +1,18 @@
+metadata:
+  generateName: hello-tony-
+  namespace: default
+  labels:
+    example: 'true'
+spec:
+  entrypoint: argosay
+  templates:
+  - name: argosay
+    container:
+      name: main
+      image: docker/whalesay:latest
+      command: [sh, -c]
+      args: ["cowsay hello tony | tee /tmp/hello_world.txt"]
+  ttlStrategy:
+    secondsAfterCompletion: 300
+  podGC:
+    strategy: OnPodCompletion

@@ -1,0 +1,29 @@
+metadata:
+  generateName: hello-tony-
+  namespace: default
+  labels:
+    example: 'true'
+spec:
+  entrypoint: argosay
+  templates:
+  - name: argosay
+    container:
+      name: main
+      image: docker/whalesay:latest
+      command: [sh, -c]
+      args: ["cowsay hello tony | tee /tmp/hello_world.txt"]
+    outputs:
+      artifacts:
+      - name: message
+        path: /tmp
+        gcs:
+          endpoint: storage.googleapis.com
+          bucket: argo_artifacts_ciroh
+          key: hello_world.txt.tgz
+          serviceAccountKeySecret:
+            name: my-gcs-creds
+            key: serviceAccountKey
+  ttlStrategy:
+    secondsAfterCompletion: 300
+  podGC:
+    strategy: OnPodCompletion
