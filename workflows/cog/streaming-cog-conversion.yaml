@@ -1,0 +1,39 @@
+# COG - STREAMING EXAMPLE
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: tif-to-cog-
+  namespace: argo
+spec:
+  entrypoint: tif2cog
+  # define a volume that contains credentials for connecting to GCP
+  volumes:
+  - name: gcp-secret-vol
+    secret:
+      secretName: my-gcs-creds     # name of an existing k8s secret
+  templates:
+  - name: tif2cog
+    container:
+      # mount the GCP credentials to a file inside the container
+      volumeMounts:
+      - name: gcp-secret-vol
+        mountpath: "/secret/mountpath"
+      # set the GOOGLE_APPLICATION_CREDENTIALS variable so that gdal_translate can
+      # access the input data stored in the bucket.
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/secret/mountpath/serviceAccountKey"
+      image: cuahsi/tif2cog:latest
+      args: ["-i", "/vsigs_streaming/argo_artifacts_ciroh/loganad8.tif", "-o", "/tmp/output.tif"]
+    outputs:
+      artifacts:
+        - name: output_cog
+          path: /tmp/output.tif
+          archive:
+            none: {}
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: outputs/cog.tif
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey

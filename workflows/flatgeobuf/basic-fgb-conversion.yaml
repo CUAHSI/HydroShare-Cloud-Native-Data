@@ -1,0 +1,40 @@
+
+# FLATGEOBUF - BASIC EXAMPLE
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: shp-to-fgb-basic-
+  namespace: argo
+spec:
+  entrypoint: shp2fgb
+    # define a volume that contains credentials for connecting to GCP
+  volumes:
+  - name: gcp-secret-vol
+    secret:
+      secretName: my-gcs-creds     # name of an existing k8s secret
+  templates:
+  - name: shp2fgb
+    container:
+      # mount the GCP credentials to a file inside the container
+      volumeMounts:
+      - name: gcp-secret-vol
+        mountpath: "/secret/mountpath"
+      # set the GOOGLE_APPLICATION_CREDENTIALS variable so that gdal_translate can
+      # access the input data stored in the bucket.
+      env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/secret/mountpath/serviceAccountKey"
+      image: cuahsi/gdal_translate:latest
+      args: ["-f", "FlatGeobuf", "/tmp/output.fgb", "/vsigs_streaming/argo_artifacts_ciroh/nhdflowlines/NHDFlowline.shp"]
+    outputs:
+      artifacts:
+        - name: output_fgb
+          path: /tmp/output.fgb
+          archive:
+            none: {}
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: outputs/nhd.fgb
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey

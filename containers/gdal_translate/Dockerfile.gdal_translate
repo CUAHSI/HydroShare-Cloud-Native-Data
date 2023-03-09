@@ -1,0 +1,12 @@
+FROM osgeo/gdal:alpine-small-latest
+
+RUN apk update \
+    && apk upgrade \
+    && apk add bash
+
+WORKDIR /opt
+
+ENTRYPOINT ["ogr2ogr"]
+CMD ["--help"]
+
+

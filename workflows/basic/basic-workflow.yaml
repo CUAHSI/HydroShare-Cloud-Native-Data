@@ -1,6 +1,8 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
 metadata:
-  generateName: hello-tony-
-  namespace: default
+  generateName: basic-workflow-
+  namespace: argo
   labels:
     example: 'true'
 spec:

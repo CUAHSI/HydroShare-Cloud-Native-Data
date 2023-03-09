@@ -25,7 +25,7 @@ spec:
             # As a best practice, .tgz or .tar.gz should be suffixed into the key name so the
             # resulting object has an accurate file extension and mime-type. If archive is set to
             # 'none', then preserve the appropriate file extension for the key name
-            key: hello_world.txt.tgz
+            key: outputs/hello_world.txt.tgz
             
             # serviceAccountKeySecret is a secret selector.
             # It references the k8s secret named 'my-gcs-credentials'.

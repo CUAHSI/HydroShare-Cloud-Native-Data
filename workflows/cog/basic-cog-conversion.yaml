@@ -13,7 +13,7 @@ spec:
           path: /tmp/input.tif
           gcs:
             bucket: argo_artifacts_ciroh
-            key: hydrodem_03N_03c.tif
+            key: loganad8.tif
             serviceAccountKeySecret:
               name: my-gcs-creds
               key: serviceAccountKey
