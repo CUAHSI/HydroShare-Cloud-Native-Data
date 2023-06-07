@@ -1,0 +1,15 @@
+FROM mambaorg/micromamba:focal
+
+WORKDIR /opt
+
+FROM mambaorg/micromamba:1.4.3
+COPY --chown=$MAMBA_USER:$MAMBA_USER env.yaml /tmp/env.yaml
+RUN micromamba install -y -n base -f /tmp/env.yaml && \
+    micromamba clean --all --yes
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER entry.py /tmp/entry.py
+
+#ENTRYPOINT ["ogr2ogr"]
+#CMD ["--help"]
+
+
