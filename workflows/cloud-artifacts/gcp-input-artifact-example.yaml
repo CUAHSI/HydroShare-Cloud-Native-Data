@@ -1,0 +1,40 @@
+# This is an example of a workflow consuming a GCP Storage artifact which is saved to a hard-wired
+# location. This is useful for workflows which require inputs data from a
+# pre-determined location.
+#
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: input-artifact-gcs-
+  namespace: argo
+spec:
+  entrypoint: whalesay
+  templates:
+  - name: whalesay
+    container:
+      image: docker/whalesay:latest
+      command: [sh, -c]
+      args: ["cat /tmp/file.txt | cowsay"]
+    inputs:
+      artifacts:
+        - name: file
+          path: /tmp/file.txt
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: inputs/input-text.txt
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    outputs:
+      artifacts:
+        - name: file
+          path: /tmp/file.txt
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: outputs/output-text.txt.gz
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+
+
+

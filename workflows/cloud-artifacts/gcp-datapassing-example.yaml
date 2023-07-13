@@ -1,0 +1,64 @@
+# In this example the workflow
+# 1. consumes a GCP Storage artifact
+# 2. produces an output which is passed to a second job
+# 3. the second job creates an output artifact on GCP
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: data-passing-artifact-gcs-
+  namespace: argo
+spec:
+  entrypoint: data-passing
+  templates:
+  - name: data-passing
+    steps: 
+    - - name: consume-gcp-object
+        template: whalesay1
+    - - name: consume-from-whale1
+        template: whalesay2
+        arguments:
+          artifacts:
+            - name: message
+              from: "{{steps.consume-gcp-object.outputs.artifacts.whale-msg}}"
+
+  - name: whalesay1
+    container:
+      image: docker/whalesay:latest
+      command: [sh, -c]
+      args: ["cat /tmp/file.txt | cowsay | tee /tmp/file.txt"]
+    inputs:
+      artifacts:
+        - name: file
+          path: /tmp/file.txt
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: inputs/input-text.txt
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    outputs:
+      artifacts:
+      - name: whale-msg
+        path: /tmp/file.txt
+  - name: whalesay2
+    container:
+      image: docker/whalesay:latest
+      command: [sh, -c]
+      args: ["cat /tmp/whale1-msg.txt | cowsay | tee /tmp/file.txt"]
+    inputs:
+      artifacts:
+      - name: message
+        path: /tmp/whale1-msg.txt
+    outputs:
+      artifacts:
+        - name: file
+          path: /tmp/file.txt
+          gcs:
+            bucket: argo_artifacts_ciroh
+            key: outputs/output-text.txt.gz
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+
+
+
