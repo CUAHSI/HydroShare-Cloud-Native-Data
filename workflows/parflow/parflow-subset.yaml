@@ -5,11 +5,17 @@ metadata:
   namespace: argo
 spec:
   entrypoint: parflow-subset-v1
+  templateDefaults:
+    timeout: 600s  
+    retryStrategy:
+      limit: "2"
 
   # Parameters can be passed/overridden via the argo CLI.
   # To override the printed message, run `argo submit` with the -p option:
   # $ argo submit examples/arguments-parameters.yaml -p message="goodbye world"
   arguments:
+    # there must be better way of defining multiple parameters
+    # but I can't find documentation for it.
     parameters:
     - name: pfinput
       value: /srv/input
@@ -19,7 +25,23 @@ spec:
       value: /srv/output
     - name: label
       value: pf-subset-job
-
+    - name: job-id
+      value: abc123
+#    - name: cpu-limit
+#      value: 1
+#    - name: mem-limit
+#      value: "2Gi"
+#    - name: hdd-limit
+#      value: "2Gi"
+## We should be able to use podSpecPatch to manage resources because we cannot use parameters in the container.resources section.
+#  podSpecPatch: |
+#    containers:
+#      - name: main
+#        resources:
+#          limits:
+#            memory: "{{workflow.parameters.mem-limit}}"
+#            cpu: "{{workflow.parameters.cpu-limit}}"
+#            ephemeral-storage: "{{workflow.parameters.hdd-limit}}"
   templates:
   - name: parflow-subset-v1
     inputs:
@@ -28,6 +50,7 @@ spec:
         - name: shape
         - name: output
         - name: label
+        - name: job-id
       artifacts:
         - name: pfinput-data
           path: /srv/input
@@ -41,7 +64,7 @@ spec:
           path: /srv/output
           gcs:
             bucket: subsetter-outputs
-            key: q1w2e3r4t5y6u7i8o9p0
+            key: "{{inputs.parameters.job-id}}"
             serviceAccountKeySecret:
               name: my-gcs-creds
               key: serviceAccountKey
@@ -53,7 +76,7 @@ spec:
           cpu: 1
           ephemeral-storage: "1Gi"
         limits:
-          memory: "2Gi"
+          memory: "1Gi"
           cpu: 2
           ephemeral-storage: "2Gi"
       command: ["python", "-u", "entry.py"]
@@ -67,7 +90,7 @@ spec:
           path: /srv/output
           gcs:
             bucket: subsetter-outputs
-            key: subset-output.gz
+            key: "{{inputs.parameters.job-id}}/{{inputs.parameters.label}}.gz"
             serviceAccountKeySecret:
               name: my-gcs-creds
               key: serviceAccountKey
