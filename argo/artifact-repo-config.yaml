@@ -1,0 +1,19 @@
+apiVersion: v1
+data:
+  artifactRepository: |
+    gcs:
+      bucket: argo_artifacts_ciroh
+      keyFormat: artifacts/{{workflow.name}}/{{pod.name}}     #it should reference workflow variables, such as "{{workflow.name}}/{{pod.name}}"
+      serviceAccountKeySecret:
+        name: my-gcs-creds
+        key: serviceAccountKey
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ConfigMap","metadata":{"annotations":{},"name":"workflow-controller-configmap","namespace":"argo"}}
+  creationTimestamp: "2023-07-11T19:21:47Z"
+  name: workflow-controller-configmap
+  namespace: argo
+  resourceVersion: "2712"
+  uid: 72792053-b361-466c-8afc-574c99ecfbb6
