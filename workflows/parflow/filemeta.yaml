@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: parflow-metadata-extract-
+  namespace: argo
+spec:
+  entrypoint: metadata-extractor
+  templateDefaults:
+    timeout: 600s  
+    retryStrategy:
+      limit: "2"
+  arguments:
+    parameters:
+    - name: label
+      value: pf-subset-job
+    - name: job-id
+      value: abc123
+
+  templates:
+  - name: metadata-extractor
+    inputs:
+      parameters:
+        - name: label
+        - name: job-id
+      artifacts:
+        - name: subset-results
+          path: /tmp/subset-data
+          gcs:
+            bucket: subsetter-outputs
+            key: "{{inputs.parameters.job-id}}"
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    outputs:
+      artifacts:
+        - archive:
+            none: {}
+          name: subset-results
+          path: /tmp/subset-data/.hs
+          gcs:
+            bucket: subsetter-outputs
+            key: "{{inputs.parameters.job-id}}/.hs"
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    container:
+      image: scootna/hsextract:0.1
+      command: ["/bin/sh", "-c"]
+      args: ["python3 hsextract/main.py extract /tmp/subset-data && ls -lah /tmp/subset-data/.hs"]
+

@@ -1,0 +1,132 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: parflow-subset-v1-
+  namespace: argo
+spec:
+  entrypoint: subset-and-extract-metadata
+  templateDefaults:
+    timeout: 600s  
+    retryStrategy:
+      limit: "2"
+  arguments:
+    parameters:
+    - name: pfinput
+      value: /srv/input
+    - name: shape
+      value: /srv/output/watershed.shp
+    - name: output
+      value: /srv/output
+    - name: label
+      value: pf-subset-job
+    - name: job-id
+      value: abc123
+  templates:
+  - name: subset-and-extract-metadata
+    steps:
+    - - name: subset-parflow
+        template: parflow-subset-v1
+        arguments:
+          parameters:
+          - name: pfinput
+            value: "{{workflow.parameters.pfinput}}"
+          - name: shape
+            value: "{{workflow.parameters.shape}}"
+          - name: output
+            value: "{{workflow.parameters.output}}"
+          - name: label
+            value: "{{workflow.parameters.label}}"
+          - name: job-id
+            value: "{{workflow.parameters.job-id}}"
+    - - name: extract-meta
+        template: metadata-extractor
+        arguments:
+          parameters:
+          - name: label
+            value: "{{workflow.parameters.label}}"
+          - name: job-id
+            value: "{{workflow.parameters.job-id}}"
+
+  - name: parflow-subset-v1
+    inputs:
+      parameters:
+        - name: pfinput
+        - name: shape
+        - name: output
+        - name: label
+        - name: job-id
+      artifacts:
+        - name: pfinput-data
+          path: /srv/input
+          gcs:
+            bucket: subsetter-static-input
+            key: pfconus.v1.0
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+        - name: pfoutput-data
+          path: /srv/output
+          gcs:
+            bucket: subsetter-outputs
+            key: "{{inputs.parameters.job-id}}"
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    container:
+      image: cuahsi/parflow-subset-argo:v1
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: 1
+          ephemeral-storage: "1Gi"
+        limits:
+          memory: "1Gi"
+          cpu: 2
+          ephemeral-storage: "2Gi"
+      command: ["python", "-u", "entry.py"]
+      args: ["{{inputs.parameters.label}}",
+             "{{inputs.parameters.shape}}",
+             "{{inputs.parameters.pfinput}}",
+             "{{inputs.parameters.output}}"]
+    outputs:
+      artifacts:
+        - archive:
+            none: {}
+          name: subset-results
+          path: /srv/output
+          gcs:
+            bucket: subsetter-outputs
+            key: "{{inputs.parameters.job-id}}"
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+  - name: metadata-extractor
+    inputs:
+      parameters:
+        - name: label
+        - name: job-id
+      artifacts:
+        - name: subset-results
+          path: /tmp/subset-data
+          gcs:
+            bucket: subsetter-outputs
+            key: "{{inputs.parameters.job-id}}"
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    outputs:
+      artifacts:
+        - archive:
+            none: {}
+          name: subset-results
+          path: /tmp/subset-data/.hs
+          gcs:
+            bucket: subsetter-outputs
+            key: "{{inputs.parameters.job-id}}/.hs"
+            serviceAccountKeySecret:
+              name: my-gcs-creds
+              key: serviceAccountKey
+    container:
+      image: scootna/hsextract:0.1
+      command: ["/bin/sh", "-c"] 
+      args: ["python3 hsextract/main.py extract /tmp/subset-data && ls -lah /tmp/subset-data/.hs"]
