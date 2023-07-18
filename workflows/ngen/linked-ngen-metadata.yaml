@@ -1,0 +1,59 @@
+metadata:
+  name: linked-ngen-metadata
+  namespace: workflows
+spec:
+  templates:
+    - name: subset
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      dag:
+        tasks:
+          - name: call-ngen-subset
+            arguments:
+              parameters:
+                - name: wb-id
+                  value: '{{workflow.parameters.wb-id}}'
+                - name: vpu-id
+                  value: '{{workflow.parameters.vpu-id}}'
+                - name: job-id
+                  value: '{{workflow.parameters.job-id}}'
+                - name: hydrofabric-url
+                  value: '{{workflow.parameters.hydrofabric-url}}'
+                - name: output-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: output-basepath
+                  value: '{{workflow.parameters.output-basepath}}'
+            templateRef:
+              name: ngen-subset-v1
+              template: ngen-subset-v1
+          - name: call-metadata-extraction
+            arguments:
+              parameters:
+                - name: bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: path
+                  value: '{{workflow.parameters.output-basepath}}'
+            templateRef:
+              name: metadata-extractor
+              template: metadata-extractor
+            dependencies:
+              - call-ngen-subset
+  entrypoint: subset
+  arguments:
+    parameters:
+      - name: wb-id
+        value: wb-2917533
+      - name: vpu-id
+        value: '16'
+      - name: job-id
+      - name: hydrofabric-url
+        value: s3://nextgen-hydrofabric/pre-release/
+      - name: output-bucket
+        value: subsetter-outputs
+      - name: output-basepath
+        value: ngen
+  workflowMetadata:
+    labels:
+      example: 'true'
+
