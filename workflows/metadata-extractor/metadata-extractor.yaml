@@ -1,0 +1,56 @@
+metadata:
+  name: metadata-extractor
+  generateName: metadata-extract-
+spec:
+  templates:
+    - name: metadata-extractor
+      inputs:
+        parameters:
+          - name: bucket
+          - name: path
+        artifacts:
+          - name: input-data
+            path: /tmp/input-data
+            gcs:
+              bucket: '{{inputs.parameters.bucket}}'
+              serviceAccountKeySecret:
+                name: my-gcs-creds
+                key: serviceAccountKey
+              key: '{{inputs.parameters.path}}'
+      outputs:
+        artifacts:
+          - name: output-metadata
+            path: /tmp/input-data/.hs
+            gcs:
+              bucket: '{{inputs.parameters.bucket}}'
+              serviceAccountKeySecret:
+                name: my-gcs-creds
+                key: serviceAccountKey
+              key: '{{inputs.parameters.path}}/.meta'
+            archive:
+              none: {}
+      metadata: {}
+      container:
+        name: ''
+        image: scootna/hsextract:0.1
+        command:
+          - /bin/sh
+          - '-c'
+        args:
+          - >-
+            python3 hsextract/main.py extract /tmp/input-data && ls -lah
+            /tmp/input-data/.hs
+        resources: {}
+  entrypoint: metadata-extractor
+  arguments:
+    parameters:
+      - name: bucket
+      - name: path
+  templateDefaults:
+    inputs: {}
+    outputs: {}
+    metadata: {}
+    retryStrategy:
+      limit: '0'
+    timeout: 600s
+
