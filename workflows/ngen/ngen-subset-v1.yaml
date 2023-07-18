@@ -1,0 +1,71 @@
+metadata:
+  name: ngen-subset-v1
+  generateName: ngen-subset-v1-
+  namespace: workflows
+spec:
+  templates:
+    - name: ngen-subset-v1
+      inputs:
+        parameters:
+          - name: wb-id
+          - name: vpu-id
+          - name: job-id
+          - name: hydrofabric-url
+          - name: output-bucket
+          - name: output-basepath
+      outputs:
+        artifacts:
+          - name: subset-results
+            path: /srv/output
+            gcs:
+              bucket: '{{inputs.parameters.output-bucket}}'
+              serviceAccountKeySecret:
+                name: my-gcs-creds
+                key: serviceAccountKey
+              key: >-
+                {{inputs.parameters.output-basepath}}/{{inputs.parameters.job-id}}
+            archive:
+              none: {}
+      metadata: {}
+      container:
+        name: ''
+        image: cuahsi/ngen-subset:v1
+        command:
+          - python
+          - '-u'
+          - entry.py
+        args:
+          - '{{inputs.parameters.wb-id}}'
+          - '{{inputs.parameters.vpu-id}}'
+          - '{{inputs.parameters.hydrofabric-url}}'
+        resources:
+          limits:
+            cpu: '2'
+            ephemeral-storage: 2Gi
+            memory: 4Gi
+          requests:
+            cpu: '1'
+            ephemeral-storage: 1Gi
+            memory: 1Gi
+  entrypoint: ngen-subset-v1
+  arguments:
+    parameters:
+      - name: wb-id
+        value: wb-2917533
+      - name: vpu-id
+        value: '16'
+      - name: job-id
+      - name: hydrofabric-url
+        value: s3://nextgen-hydrofabric/pre-release/
+      - name: output-bucket
+        value: subsetter-outputs
+      - name: output-basepath
+        value: ngen
+  templateDefaults:
+    inputs: {}
+    outputs: {}
+    metadata: {}
+    retryStrategy:
+      limit: '2'
+    timeout: 600s
+
