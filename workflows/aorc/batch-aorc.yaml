@@ -1,0 +1,110 @@
+metadata:
+  name: collect-aorc-forcing-batch
+  generateName: batch-aorc-
+  namespace: workflows
+  uid: 1dea0358-00d9-4ae2-bfde-03aba76b15d1
+  resourceVersion: '204077361'
+  generation: 3
+  creationTimestamp: '2023-07-25T20:58:46Z'
+  labels:
+    workflows.argoproj.io/creator: '112251210534458906530'
+  managedFields:
+    - manager: argo
+      operation: Update
+      apiVersion: argoproj.io/v1alpha1
+      time: '2023-07-25T21:06:18Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:generateName: {}
+          f:labels:
+            .: {}
+            f:workflows.argoproj.io/creator: {}
+        f:spec: {}
+spec:
+  templates:
+    - name: collect-aorc
+      inputs:
+        parameters:
+          - name: start-date
+          - name: end-date
+          - name: shapefile-bucket
+          - name: shapefile-path
+          - name: watershed-filename
+          - name: job-id
+          - name: output-bucket
+          - name: output-path
+        artifacts:
+          - name: shapefile-input
+            path: /srv/shp-data
+            gcs:
+              bucket: '{{inputs.parameters.shapefile-bucket}}'
+              serviceAccountKeySecret:
+                name: my-gcs-creds
+                key: serviceAccountKey
+              key: '{{inputs.parameters.shapefile-path}}/'
+      outputs:
+        artifacts:
+          - name: aorc-output
+            path: /srv/output
+            gcs:
+              bucket: '{{inputs.parameters.output-bucket}}'
+              serviceAccountKeySecret:
+                name: my-gcs-creds
+                key: serviceAccountKey
+              key: >-
+                {{inputs.parameters.output-path}}/{{inputs.parameters.job-id}}.tar.gz
+            archive:
+              none: {}
+      metadata: {}
+      container:
+        name: ''
+        image: cuahsi/aorc:latest
+        command:
+          - python
+          - '-u'
+          - entry.py
+        args:
+          - '{{inputs.parameters.start-date}}'
+          - '{{inputs.parameters.end-date}}'
+          - /srv/shp-data/watershed.shp
+          - /srv/output
+          - '--verbose'
+        ports:
+          - containerPort: 8787
+        resources:
+          requests:
+            cpu: '2'
+            ephemeral-storage: 10Gi
+            memory: 16Gi
+  entrypoint: collect-aorc
+  arguments:
+    parameters:
+      - name: start-date
+        value: '{{item.start-date}}'
+      - name: end-date
+        value: '{{item.end-date}}'
+      - name: shapefile-bucket
+        value: subsetter-outputs
+      - name: shapefile-path
+        value: q1w2e3r4t5y6u7i8o9p0
+      - name: watershed-filename
+        value: watershed.shp
+      - name: job-id
+        value: qwerty
+      - name: output-bucket
+        value: subsetter-outputs
+      - name: output-path
+        value: aorc
+  withItems:
+  - {start-date: '2010-01-01 00:00:00', end-date: '2010-01-02 23:00:00'}
+  - {start-date: '2010-01-03 00:00:00', end-date: '2010-01-04 23:00:00'}
+  - {start-date: '2010-01-05 00:00:00', end-date: '2010-01-06 23:00:00'}
+  templateDefaults:
+    inputs: {}
+    outputs: {}
+    metadata: {}
+    retryStrategy:
+      limit: '0'
+    timeout: 600s
+
