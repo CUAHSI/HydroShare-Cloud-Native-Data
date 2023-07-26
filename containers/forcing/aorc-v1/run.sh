@@ -1,4 +1,12 @@
 #!/bin/bash
 
 
-python entry.py 2010-01-01 2010-01-10 /Users/castro/Documents/work/ciroh/HydroShare-Cloud-Native-Data/notebooks/sample-data/watershed.shp --verbose
+docker run --rm \
+    -v $(pwd)/output:/srv/output \
+    -v $(pwd)/../../../notebooks/sample-data:/srv/shp-data \
+    cuahsi/aorc:1.1 \
+    "2010-01-01 00:00:00" \
+    "2010-01-01 01:00:00" \
+    /srv/shp-data/watershed.shp \
+    /srv/output \
+    --verbose

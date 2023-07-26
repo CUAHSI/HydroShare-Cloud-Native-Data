@@ -12,11 +12,9 @@ from dask.distributed import Client
 from kerchunk.combine import MultiZarrToZarr
 
 import logging
-from typing import List
 from pathlib import Path
 from typer import run, Argument, Option
 from typing_extensions import Annotated
-
 
 
 def main(
@@ -63,7 +61,7 @@ def main(
         ts = datetime.utcfromtimestamp(t.astype(int) * 1e-9)
         paths.append(f'{outpath}/{ts.strftime("%Y%m%d%H%M")}.LDASIN_DOMAIN1')
     logging.info('Saving AORC to disk')
-    xarray.save_mfdataset(datasets, paths)
+    xarray.save_mfdataset(datasets, paths, format='NETCDF4')
 
     logging.info('Operation Completed Successfully')
 
@@ -91,7 +89,7 @@ def load_zarr(start_date: datetime,
   """
     # create an instace of the S3FileSystem class from s3fs
     s3 = S3FileSystem(anon=True)
-
+    
     # todo: this doesn't seem super efficient. A regex solution would probably
     # be better but a quick search indicated that it's not supported
     # in the s3fs library
@@ -276,9 +274,6 @@ def clip_aorc_by_shapefile(ds: xarray.Dataset,
 
     logging.info('Successfully clipped Dataset')
     return ds
-
-
-
 
 if __name__ == "__main__":
     run(main)

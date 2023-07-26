@@ -13,3 +13,4 @@ s3fs==2023.6.0
 shapely==2.0.1
 typer==0.9.0
 xarray==2023.7.0
+requests
