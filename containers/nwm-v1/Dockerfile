@@ -18,13 +18,14 @@ RUN apt update \
  gfortran \
  && rm -rf /var/lib/apt/lists/*
 
-######################
-# Install R-WRFHYDRO #
-######################
-RUN install.r remotes ncdf4 raster \
-    && curl -fsSL https://api.github.com/repos/NCAR/rwrfhydro/tarball/HEAD -o /tmp/rwrfhydro.tar.gz
+#####################################
+# Install R Packages and R-WRFHYDRO #
+#####################################
+Run R -e "install.packages('remotes')"
 
-RUN R -e "remotes::install_local('/tmp/rwrfhydro.tar.gz', dependencies=T)" \
+Run R -e "install.packages(c('ncdf4', 'raster'))" \
+    && curl -fsSL https://api.github.com/repos/NCAR/rwrfhydro/tarball/HEAD -o /tmp/rwrfhydro.tar.gz \
+    && R -e "remotes::install_local('/tmp/rwrfhydro.tar.gz', dependencies=T)" \
     && rm -rf /tmp/downloaded_packages 
 
 #####################
