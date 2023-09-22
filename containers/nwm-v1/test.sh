@@ -11,7 +11,7 @@ else
 fi
 
 # Define the docker image name 
-IMAGE="igarousi/nwm-subset:v1.2.4"
+IMAGE="cuahsi/nwm-subset:v1.2.4"
 
 # Run the docker container
 docker run --rm -ti \
