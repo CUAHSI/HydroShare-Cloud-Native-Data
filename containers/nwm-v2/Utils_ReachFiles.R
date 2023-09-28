@@ -52,16 +52,16 @@ SubsetWts <- function(wts, rlids, istart, iend, jstart, jend) {
 
 UpdateLinkFile <- function(linkFile, linkDf, subDim=TRUE) {
 	if (subDim) {
-  #      	cmdtxt <- paste0("ncks -O -d feature_id,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
-               cmdtxt <- paste0("ncks -O -d linkDim,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
+        	cmdtxt <- paste0("ncks -O -d feature_id,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
+#               cmdtxt <- paste0("ncks -O -d linkDim,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
 
-#		print(cmdtxt)
+		print(cmdtxt)
         	system(cmdtxt)
 	}
 
         ncid <- nc_open(linkFile, write=TRUE)
         for (i in names(ncid$var)) {
-#		print(i)
+		print(i)
                 if (i %in% names(linkDf)) ncvar_put(ncid, i, linkDf[,i])
         }
         nc_close(ncid)
