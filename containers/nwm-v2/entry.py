@@ -14,7 +14,7 @@ def main(
     xmax: float = typer.Argument(..., help="Upper x boundary"),
     nwmv1_data: str = typer.Argument(
         "/srv/domain",
-        help="Directory where NWM V2.1 data is located/mounted " "within the container",
+        help="Directory where NWM V2.0 data is located/mounted " "within the container",
     ),
     output_dir: str = typer.Argument("/srv/output", help="Directory to save output"),
 ):
