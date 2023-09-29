@@ -72,4 +72,4 @@ COPY entry.py /srv/entry.py
 
 # Define the container's default execution command
 WORKDIR /srv
-#ENTRYPOINT ["python", "-u", "entry.py"]
+ENTRYPOINT ["python", "-u", "entry.py"]
