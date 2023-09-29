@@ -52,8 +52,8 @@ SubsetWts <- function(wts, rlids, istart, iend, jstart, jend) {
 
 UpdateLinkFile <- function(linkFile, linkDf, subDim=TRUE) {
 	if (subDim) {
-#        	cmdtxt <- paste0("ncks -O -d feature_id,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
-               cmdtxt <- paste0("ncks -O -d linkDim,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
+        	cmdtxt <- paste0("ncks -O -d feature_id,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
+#               cmdtxt <- paste0("ncks -O -d linkDim,1,", nrow(linkDf), " ", linkFile, " ", linkFile)
 
 		print(cmdtxt)
         	system(cmdtxt)
