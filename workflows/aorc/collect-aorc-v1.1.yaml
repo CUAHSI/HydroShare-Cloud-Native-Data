@@ -1,0 +1,85 @@
+metadata:
+  name: collect-aorc-forcing-v1
+  generateName: collect-aorc-forcing-v1-
+  namespace: workflows
+spec:
+  templates:
+    - name: collect-aorc
+      inputs:
+        parameters:
+          - name: start-date
+          - name: end-date
+          - name: shapefile-bucket
+          - name: shapefile-path
+          - name: watershed-filename
+          - name: job-id
+          - name: output-bucket
+          - name: output-path
+        artifacts:
+          - name: shapefile-input
+            path: /srv/shp-data
+            gcs:
+              bucket: '{{inputs.parameters.shapefile-bucket}}'
+              serviceAccountKeySecret:
+                name: my-gcs-creds
+                key: serviceAccountKey
+              key: '{{inputs.parameters.shapefile-path}}/'
+      outputs:
+        artifacts:
+          - name: aorc-output
+            path: /srv/output
+            gcs:
+              bucket: '{{inputs.parameters.output-bucket}}'
+              serviceAccountKeySecret:
+                name: my-gcs-creds
+                key: serviceAccountKey
+              key: >-
+                {{inputs.parameters.output-path}}/{{inputs.parameters.job-id}}.tar.gz
+      metadata: {}
+      container:
+        name: ''
+        image: cuahsi/aorc:latest
+        command:
+          - python
+          - '-u'
+          - entry.py
+        args:
+          - '{{inputs.parameters.start-date}}'
+          - '{{inputs.parameters.end-date}}'
+          - /srv/shp-data/watershed.shp
+          - /srv/output
+          - '--verbose'
+        ports:
+          - containerPort: 8787
+        resources:
+          requests:
+            cpu: '2'
+            ephemeral-storage: 10Gi
+            memory: 16Gi
+  entrypoint: collect-aorc
+  arguments:
+    parameters:
+      - name: start-date
+        value: '2010-01-01 00:00:00'
+      - name: end-date
+        value: '2010-01-01 01:00:00'
+      - name: shapefile-bucket
+        value: subsetter-outputs
+      - name: shapefile-path
+        value: q1w2e3r4t5y6u7i8o9p0
+      - name: watershed-filename
+        value: watershed.shp
+      - name: job-id
+        value: qwerty
+      - name: output-bucket
+        value: subsetter-outputs
+      - name: output-path
+        value: aorc
+  templateDefaults:
+    inputs: {}
+    outputs: {}
+    metadata: {}
+    retryStrategy:
+      limit: '0'
+    timeout: 600s
+
