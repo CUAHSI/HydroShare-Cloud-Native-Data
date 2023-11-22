@@ -28,8 +28,8 @@ class catchtime:
 
 def collect_data():
     bucket_url = 's3://aorc-v1.1-zarr-1-year/'
-    key='AKIATL6IACWUNBCC4455'  
-    secret='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'  
+    key='[KEY]'  
+    secret='[SECRET]'  
     
     with catchtime('loading zarr'):
         ds = xr.open_zarr(fsspec.get_mapper(bucket_url,
