@@ -1,6 +1,5 @@
 FROM pandas/pandas:pip-minimal
 
-
 RUN pip install \
     s3fs \
     fsspec \
