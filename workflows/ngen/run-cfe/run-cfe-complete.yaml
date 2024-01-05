@@ -1,0 +1,149 @@
+metadata:
+  name: run-cfe-complete
+  namespace: workflows
+  uid: 93bde55d-43b0-4dd9-8295-ab625fc0eba1
+  resourceVersion: '371622460'
+  generation: 16
+  creationTimestamp: '2024-01-04T17:28:29Z'
+  labels:
+    example: 'true'
+    workflows.argoproj.io/creator: '112251210534458906530'
+  managedFields:
+    - manager: argo
+      operation: Update
+      apiVersion: argoproj.io/v1alpha1
+      time: '2024-01-05T15:05:50Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:labels:
+            .: {}
+            f:example: {}
+            f:workflows.argoproj.io/creator: {}
+        f:spec: {}
+spec:
+  templates:
+    - name: prepare-and-run-cfe
+      inputs:
+        parameters:
+          - name: wb-id
+            value: '{{workflow.parameters.wb-id}}'
+          - name: vpu-id
+            value: '{{workflow.parameters.vpu-id}}'
+          - name: output-bucket
+            value: '{{workflow.parameters.output-bucket}}'
+          - name: start-date
+            value: '{{workflow.parameters.start-date}}'
+          - name: end-date
+            value: '{{workflow.parameters.end-date}}'
+      outputs: {}
+      metadata: {}
+      dag:
+        tasks:
+          - name: subset-domain
+            arguments:
+              parameters:
+                - name: wb-id
+                  value: '{{workflow.parameters.wb-id}}'
+                - name: vpu-id
+                  value: '{{workflow.parameters.vpu-id}}'
+                - name: output-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: hydrofabric-url
+                  value: s3://lynker-spatial/v20/gpkg/
+                - name: output-path
+                  value: '{{workflow.parameters.wb-id}}'
+            templateRef:
+              name: ngen-v2.0-subset-minio
+              template: ngen-subset-v20
+          - name: collect-forcing
+            arguments:
+              parameters:
+                - name: shape-file-path
+                  value: '{{workflow.parameters.wb-id}}/domain/watershed.gz'
+                - name: output-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: output-path
+                  value: '{{workflow.parameters.wb-id}}/forcing'
+                - name: start-date
+                  value: '{{workflow.parameters.start-date}}'
+                - name: end-date
+                  value: '{{workflow.parameters.end-date}}'
+                - name: aorc-secret
+                  value: Q9TGpuuCzAWIUMWEkYY/zuFe6XApPIZrbnKWfliP
+            templateRef:
+              name: collect-aorc-forcing-v1.1
+              template: collect-aorc
+            dependencies:
+              - subset-domain
+          - name: configure-cfe
+            arguments:
+              parameters:
+                - name: forcing-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: forcing-path
+                  value: '{{workflow.parameters.wb-id}}/forcing'
+                - name: forcing-file-name
+                  value: results.nc
+                - name: domain-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: domain-path
+                  value: '{{workflow.parameters.wb-id}}/domain'
+                - name: geopackage-file-name
+                  value: '{{workflow.parameters.wb-id}}_upstream_subset.gpkg'
+                - name: noaaowp-attributes-file-name
+                  value: cfe_noahowp_attributes.csv
+                - name: output-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: output-path
+                  value: '{{workflow.parameters.wb-id}}'
+            templateRef:
+              name: cge-configure
+              template: configure
+            dependencies:
+              - subset-domain
+              - collect-forcing
+          - name: run-ngen-simulation
+            arguments:
+              parameters:
+                - name: input-data-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: input-data-path
+                  value: '{{workflow.parameters.wb-id}}'
+                - name: catchment-file-path
+                  value: domain/catchments.geojson
+                - name: nexus-file-path
+                  value: domain/nexus.geojson
+                - name: realization-file-path
+                  value: config/realization.json
+                - name: output-bucket
+                  value: '{{workflow.parameters.output-bucket}}'
+                - name: output-path
+                  value: '{{workflow.parameters.wb-id}}'
+            templateRef:
+              name: ngen-run
+              template: execute-ngen-simulation
+            dependencies:
+              - subset-domain
+              - collect-forcing
+              - configure-cfe
+  entrypoint: prepare-and-run-cfe
+  arguments:
+    parameters:
+      - name: wb-id
+        value: wb-2917533
+      - name: vpu-id
+        value: '16'
+      - name: output-bucket
+        value: subsetter-outputs
+      - name: start-date
+        value: '2020-01-01'
+      - name: end-date
+        value: 2020-01-2
+  templateDefaults:
+    inputs: {}
+    outputs: {}
+    metadata: {}
+    retryStrategy:
+      limit: '0'
+    timeout: 600s
