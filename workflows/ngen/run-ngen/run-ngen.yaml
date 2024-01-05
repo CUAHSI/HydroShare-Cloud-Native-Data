@@ -1,0 +1,115 @@
+metadata:
+  name: ngen-run
+  namespace: workflows
+  uid: b57f683f-037f-419d-8334-f5578c5945a5
+  resourceVersion: '371622997'
+  generation: 9
+  creationTimestamp: '2023-12-21T20:20:45Z'
+  labels:
+    workflows.argoproj.io/creator: '112251210534458906530'
+  managedFields:
+    - manager: argo
+      operation: Update
+      apiVersion: argoproj.io/v1alpha1
+      time: '2024-01-05T15:06:35Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:labels:
+            .: {}
+            f:workflows.argoproj.io/creator: {}
+        f:spec: {}
+spec:
+  templates:
+    - name: execute-ngen-simulation
+      inputs:
+        parameters:
+          - name: input-data-bucket
+            value: '{{workflow.parameters.input-data-bucket}}'
+          - name: input-data-path
+            value: '{{workflow.parameters.input-data-path}}'
+          - name: catchment-file-path
+            value: '{{workflow.parameters.catchment-file-path}}'
+          - name: nexus-file-path
+            value: '{{workflow.parameters.nexus-file-path}}'
+          - name: realization-file-path
+            value: '{{workflow.parameters.realization-file-path}}'
+          - name: output-bucket
+            value: '{{workflow.parameters.output-bucket}}'
+          - name: output-path
+            value: '{{workflow.parameters.output-path}}'
+        artifacts:
+          - name: input-data
+            path: /ngen/data
+            s3:
+              endpoint: api.minio.cuahsi.io
+              bucket: '{{inputs.parameters.input-data-bucket}}'
+              accessKeySecret:
+                name: minio-credentials
+                key: accessKey
+              secretKeySecret:
+                name: minio-credentials
+                key: secretKey
+              key: '{{inputs.parameters.input-data-path}}'
+      outputs:
+        artifacts:
+          - name: simulation-results
+            path: /ngen/data/results
+            s3:
+              endpoint: api.minio.cuahsi.io
+              bucket: '{{inputs.parameters.output-bucket}}'
+              accessKeySecret:
+                name: minio-credentials
+                key: accessKey
+              secretKeySecret:
+                name: minio-credentials
+                key: secretKey
+              key: '{{inputs.parameters.output-path}}/results'
+            archive:
+              none: {}
+      metadata: {}
+      script:
+        name: run-ngen-simulation
+        image: awiciroh/ciroh-ngen-image:latest-x86
+        command:
+          - /bin/bash
+        resources:
+          requests:
+            cpu: '2'
+            ephemeral-storage: 10Gi
+            memory: 16Gi
+        source: |
+          mkdir -p /ngen/data/results/{streamout,restart,lakeout,cfe}
+          cd /ngen/data/results; \
+            /dmod/bin/ngen-serial \
+            /ngen/data/'{{inputs.parameters.catchment-file-path}}' all \
+            /ngen/data/'{{inputs.parameters.nexus-file-path}}' all \
+            /ngen/data/'{{inputs.parameters.realization-file-path}}'
+
+          mv /ngen/data/results/*.parquet \
+             /ngen/data/results/*.csv \
+             /ngen/data/results/cfe
+  entrypoint: execute-ngen-simulation
+  arguments:
+    parameters:
+      - name: input-data-bucket
+        value: subsetter-outputs
+      - name: input-data-path
+        value: acastronova/wb-2917533
+      - name: catchment-file-path
+        value: domain/catchments.geojson
+      - name: nexus-file-path
+        value: domain/nexus.geojson
+      - name: realization-file-path
+        value: config/realization.json
+      - name: output-bucket
+        value: subsetter-outputs
+      - name: output-path
+        value: acastronova/wb-2917533
+  templateDefaults:
+    inputs: {}
+    outputs: {}
+    metadata: {}
+    retryStrategy:
+      limit: '0'
+    timeout: 600s

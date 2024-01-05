@@ -1,0 +1,150 @@
+metadata:
+  name: cge-configure
+  namespace: workflows
+  uid: 99d31ef5-b5db-4f74-af52-4894fbea81a0
+  resourceVersion: '370781906'
+  generation: 13
+  creationTimestamp: '2023-12-21T17:47:27Z'
+  labels:
+    workflows.argoproj.io/creator: '112251210534458906530'
+  managedFields:
+    - manager: argo
+      operation: Update
+      apiVersion: argoproj.io/v1alpha1
+      time: '2024-01-04T18:40:29Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:labels:
+            .: {}
+            f:workflows.argoproj.io/creator: {}
+        f:spec: {}
+spec:
+  templates:
+    - name: configure
+      inputs:
+        parameters:
+          - name: forcing-bucket
+            value: '{{workflow.parameters.forcing-bucket}}'
+          - name: forcing-path
+            value: '{{workflow.parameters.forcing-path}}'
+          - name: forcing-file-name
+            value: '{{workflow.parameters.forcing-file-name}}'
+          - name: domain-bucket
+            value: '{{workflow.parameters.domain-bucket}}'
+          - name: domain-path
+            value: '{{workflow.parameters.domain-path}}'
+          - name: geopackage-file-name
+            value: '{{workflow.parameters.geopackage-file-name}}'
+          - name: noaaowp-attributes-file-name
+            value: '{{workflow.parameters.noaaowp-attributes-file-name}}'
+          - name: output-bucket
+            value: '{{workflow.parameters.output-bucket}}'
+          - name: output-path
+            value: '{{workflow.parameters.output-path}}'
+        artifacts:
+          - name: forcing-data
+            path: /srv/input/forcing
+            s3:
+              endpoint: api.minio.cuahsi.io
+              bucket: '{{inputs.parameters.forcing-bucket}}'
+              accessKeySecret:
+                name: minio-credentials
+                key: accessKey
+              secretKeySecret:
+                name: minio-credentials
+                key: secretKey
+              key: '{{inputs.parameters.forcing-path}}'
+          - name: domain-data
+            path: /srv/input/domain
+            s3:
+              endpoint: api.minio.cuahsi.io
+              bucket: '{{inputs.parameters.domain-bucket}}'
+              accessKeySecret:
+                name: minio-credentials
+                key: accessKey
+              secretKeySecret:
+                name: minio-credentials
+                key: secretKey
+              key: '{{inputs.parameters.domain-path}}'
+      outputs:
+        artifacts:
+          - name: output-configs
+            path: /srv/output/config
+            s3:
+              endpoint: api.minio.cuahsi.io
+              bucket: '{{inputs.parameters.output-bucket}}'
+              accessKeySecret:
+                name: minio-credentials
+                key: accessKey
+              secretKeySecret:
+                name: minio-credentials
+                key: secretKey
+              key: '{{inputs.parameters.output-path}}/config'
+            archive:
+              none: {}
+          - name: output-forcing
+            path: /srv/output/forcing
+            s3:
+              endpoint: api.minio.cuahsi.io
+              bucket: '{{inputs.parameters.output-bucket}}'
+              accessKeySecret:
+                name: minio-credentials
+                key: accessKey
+              secretKeySecret:
+                name: minio-credentials
+                key: secretKey
+              key: '{{inputs.parameters.output-path}}/forcing'
+            archive:
+              none: {}
+      metadata: {}
+      container:
+        name: ''
+        image: cuahsi/cfe-configure:latest
+        command:
+          - python
+          - '-u'
+          - entry.py
+        args:
+          - /srv/input/domain/{{inputs.parameters.geopackage-file-name}}
+          - /srv/input/forcing/{{inputs.parameters.forcing-file-name}}
+          - /srv/input/domain/{{inputs.parameters.noaaowp-attributes-file-name}}
+          - /srv/output
+          - '1'
+          - '7'
+          - '--verbose'
+        ports:
+          - containerPort: 8787
+        resources:
+          requests:
+            cpu: '2'
+            ephemeral-storage: 10Gi
+            memory: 16Gi
+  entrypoint: configure
+  arguments:
+    parameters:
+      - name: forcing-bucket
+        value: subsetter-outputs
+      - name: forcing-path
+        value: acastronova/wb-2917533/forcing
+      - name: forcing-file-name
+        value: results.nc
+      - name: domain-bucket
+        value: subsetter-outputs
+      - name: domain-path
+        value: acastronova/wb-2917533/domain
+      - name: geopackage-file-name
+        value: wb-2917533_upstream_subset.gpkg
+      - name: noaaowp-attributes-file-name
+        value: cfe_noahowp_attributes.csv
+      - name: output-bucket
+        value: subsetter-outputs
+      - name: output-path
+        value: acastronova/wb-2917533
+  templateDefaults:
+    inputs: {}
+    outputs: {}
+    metadata: {}
+    retryStrategy:
+      limit: '0'
+    timeout: 600s
