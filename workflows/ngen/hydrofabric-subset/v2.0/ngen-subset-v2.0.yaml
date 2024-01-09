@@ -2,8 +2,8 @@ metadata:
   name: ngen-v2.0-subset-minio
   namespace: workflows
   uid: 80c1a769-9a8b-42a1-af33-747afaf50b31
-  resourceVersion: '336573343'
-  generation: 1
+  resourceVersion: '370796255'
+  generation: 10
   creationTimestamp: '2023-12-01T14:47:35Z'
   labels:
     example: 'true'
@@ -12,7 +12,7 @@ metadata:
     - manager: argo
       operation: Update
       apiVersion: argoproj.io/v1alpha1
-      time: '2023-12-01T14:47:35Z'
+      time: '2024-01-04T19:01:04Z'
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -21,18 +21,15 @@ metadata:
             f:example: {}
             f:workflows.argoproj.io/creator: {}
         f:spec: {}
-  namespace: workflows
 spec:
   templates:
-    - name: ngen-subset-v2.0
+    - name: ngen-subset-v20
       inputs:
         parameters:
           - name: wb-id
             value: '{{workflow.parameters.wb-id}}'
           - name: vpu-id
             value: '{{workflow.parameters.vpu-id}}'
-          - name: job-id
-            value: '{{workflow.parameters.job-id}}'
           - name: hydrofabric-url
             value: '{{workflow.parameters.hydrofabric-url}}'
           - name: output-bucket
@@ -45,20 +42,24 @@ spec:
             path: /srv/output
             s3:
               endpoint: api.minio.cuahsi.io
-              bucket: subsetter-outputs
+              bucket: '{{inputs.parameters.output-bucket}}'
               accessKeySecret:
                 name: minio-credentials
                 key: accessKey
               secretKeySecret:
                 name: minio-credentials
                 key: secretKey
-              key: '{{inputs.parameters.output-path}}/{{inputs.parameters.job-id}}'
+              key: '{{inputs.parameters.output-path}}/domain'
             archive:
               none: {}
       metadata: {}
       container:
         name: ''
         image: cuahsi/ngen-subset:v2.0-r1
+        command:
+          - python
+          - '-u'
+          - entry.py
         args:
           - '{{inputs.parameters.wb-id}}'
           - '{{inputs.parameters.vpu-id}}'
@@ -72,7 +73,7 @@ spec:
             cpu: '1'
             ephemeral-storage: 1Gi
             memory: 1Gi
-  entrypoint: ngen-subset-v2.0
+  entrypoint: ngen-subset-v20
   arguments:
     parameters:
       - name: wb-id
@@ -83,8 +84,8 @@ spec:
         value: s3://lynker-spatial/v20/gpkg/
       - name: output-path
         value: acastronova
-      - name: job-id
-        value: qwerty
+      - name: output-bucket
+        value: subsetter-outputs
   templateDefaults:
     inputs: {}
     outputs: {}
@@ -92,3 +93,4 @@ spec:
     retryStrategy:
       limit: '2'
     timeout: 600s
+
