@@ -1,0 +1,12 @@
+pandas
+geopandas
+typer
+netcdf4
+ruamel.yaml
+dask
+distributed
+pyproj
+xarray
+geocube
+rioxarray
+bokeh
