@@ -1,0 +1,92 @@
+metadata:
+  name: s3-data-download
+  namespace: workflows
+  uid: caad7c3e-ceff-4388-a26c-d6bb4053db28
+  resourceVersion: '432777981'
+  generation: 34
+  creationTimestamp: '2024-03-06T22:16:34Z'
+  labels:
+    example: 'true'
+    workflows.argoproj.io/creator: '112251210534458906530'
+  managedFields:
+    - manager: argo
+      operation: Update
+      apiVersion: argoproj.io/v1alpha1
+      time: '2024-03-07T16:05:52Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:labels:
+            .: {}
+            f:example: {}
+            f:workflows.argoproj.io/creator: {}
+        f:spec: {}
+spec:
+  templates:
+    - name: aws-download
+      inputs:
+        parameters:
+          - name: s3path
+            value: '{{workflow.parameters.s3path}}'
+          - name: output-bucket
+            value: '{{workflow.parameters.output-bucket}}'
+          - name: output-path
+            value: '{{workflow.parameters.output-path}}'
+      outputs:
+        artifacts:
+          - name: downloaded_data
+            path: /aws
+            s3:
+              endpoint: api.minio.cuahsi.io
+              bucket: '{{inputs.parameters.output-bucket}}'
+              accessKeySecret:
+                name: minio-credentials
+                key: accessKey
+              secretKeySecret:
+                name: minio-credentials
+                key: secretKey
+              key: '{{inputs.parameters.output-path}}'
+            archive:
+              none: {}
+      metadata: {}
+      container:
+        name: aws-container
+        image: amazon/aws-cli:2.15.26
+        command:
+          - /bin/bash
+          - '-c'
+        args:
+          - >
+            echo $(basename '{{inputs.parameters.s3path}}') | xargs -I % aws s3
+            sync '{{inputs.parameters.s3path}}' /aws/% --request-payer
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-readonly-creds
+                key: accessKey
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-readonly-creds
+                key: secretKey
+          - name: AWS_DEFAULT_REGION
+            valueFrom:
+              secretKeyRef:
+                name: aws-readonly-creds
+                key: aws-region
+        resources: {}
+  entrypoint: aws-download
+  arguments:
+    parameters:
+      - name: s3path
+        value: s3://noaa-nws-owp-fim/hand_fim/fim_4_4_0_0/21020002/
+      - name: output-bucket
+        value: scratch
+      - name: output-path
+        value: hand_fim/
+  ttlStrategy:
+    secondsAfterCompletion: 300
+  podGC:
+    strategy: OnPodCompletion
+
