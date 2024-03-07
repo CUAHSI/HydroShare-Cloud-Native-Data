@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 
-
+import sys
 import json
 import pandas
 import typing
 import pathlib
+import logging
+from pathlib import Path
 from collections import OrderedDict
+
+# set up logging
+log = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+from ngen.config import cfe
 
 
 class GlobalRealization:
