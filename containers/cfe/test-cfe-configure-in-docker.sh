@@ -16,7 +16,7 @@ OUTPUT="$(pwd)/output"
 INPUTS="$(pwd)/input-data"
 
 # run the docker
-# The two input arguments are for the following example are wb-2915523 (outlet catchment) and 16 (VPU ID)
+# The two input arguments are for the following example: wb-2915523 (outlet catchment) and 16 (VPU ID)
 docker run --rm -ti \
 	-v $OUTPUT:/srv/output \
 	-v $INPUTS:/srv/input \
