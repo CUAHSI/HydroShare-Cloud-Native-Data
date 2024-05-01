@@ -75,8 +75,8 @@ def create_global_cfe_realization(
     # TODO output_interval should be a configurable input
     log.debug("Creating global realization")
     simulation_time = Time(
-        start_time=starttime.strftime("%Y-%m-%d %H:%M:%S"),
-        end_time=endtime.strftime("%Y-%m-%d %H:%M:%S"),
+        start_time=starttime,
+        end_time=endtime,
         output_interval=3600,
     )
     # TODO: t_route config path should be a configurable input
@@ -84,7 +84,9 @@ def create_global_cfe_realization(
 
     # create cfe formulation
     cfe_formulation = create_cfe_formulation(
-        "{{id}}_config.ini", uses_forcing_file=False, forcing_file=""
+        conf_path=Path("/ngen/data/config/{{id}}_config.ini"),
+        uses_forcing_file=False,
+        forcing_file="",
     )
 
     # create sloth formulation
@@ -101,7 +103,9 @@ def create_global_cfe_realization(
     # to a dictionary for later.
     provider = configurations.Forcing.Provider.CSV
     forcing_configuration = configurations.Forcing(
-        file_pattern=".*{{id}}.*.csv", path="/ngen/data/forcing/", provider=provider
+        file_pattern=".*{{id}}.*.csv",
+        path=Path("/ngen/data/forcing/"),
+        provider=provider,
     )
 
     realization = Realization(
@@ -180,7 +184,7 @@ def create_catchment_cfe_realization(
         cfe_confs.append(cfe_conf)
 
         # create cfe formulation
-        cfe_formulation = create_cfe_formulation(cat_id, conf_path)
+        cfe_formulation = create_cfe_formulation(Path(conf_path))
 
         # create sloth formulation
         sloth_formulation = create_sloth_formulation()
@@ -215,8 +219,8 @@ def create_catchment_cfe_realization(
     # TODO output_interval should be a configurable input
     log.debug("Creating global realization")
     simulation_time = Time(
-        start_time=starttime.strftime("%Y-%m-%d %H:%M:%S"),
-        end_time=endtime.strftime("%Y-%m-%d %H:%M:%S"),
+        start_time=starttime,
+        end_time=endtime,
         output_interval=3600,
     )
     # TODO: t_route config path should be a configurable input
@@ -301,7 +305,7 @@ def create_cfe_formulation(
 ) -> formulation.Formulation:
     cfe_params = dict(
         name="bmi_c",
-        config=f"/ngen/data/config/{conf_path}",
+        config=conf_path,
         library_file="/dmod/shared_libs/libcfebmi.so.1.0.0",
         allow_exceed_end_time=allow_exceed_time,
         fixed_time_step=fixed_time_step,
