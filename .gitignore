@@ -127,6 +127,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+conda-env/
 
 # Spyder project settings
 .spyderproject
@@ -160,3 +161,7 @@ cython_debug/
 #.idea/
 
 .DS_Store
+
+# misc
+extra/
+output-/
