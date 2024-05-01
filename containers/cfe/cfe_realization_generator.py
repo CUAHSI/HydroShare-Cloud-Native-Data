@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
-def create_default_cfe_realization(
+def create_global_cfe_realization(
     noah_params_path: Path,
     starttime: datetime,
     endtime: datetime,
@@ -25,7 +25,117 @@ def create_default_cfe_realization(
     output_config_path: Path,
 ) -> bool:
     """
-    Creates a default cfe realizations from domain data
+    Creates a global-level cfe realization.
+
+    Parameters
+    ----------
+    noah_params_path:  pathlib.Path
+        path to noah parameters obtained from the HydroFabric
+    start: datetime.datetime
+        start date of simulation
+    end: datetime.datetime
+        end date of simulation
+    forcing_path: pathlib.Path
+        path to the directory containing forcing files (*.csv)
+    output_config_path: pathlib.Path
+        path to save the output configuration files
+
+    """
+
+    # create output path if it doesn't exist
+    if not output_config_path.exists():
+        log.info("creating output directory for configuration files")
+        output_config_path.mkdir()
+
+    # read noah parameters
+    df_noah_params = pandas.read_csv(noah_params_path)
+    catchment_atts = parse_cfe_parameters(df_noah_params)
+
+    # loop through each catchment write ini configs
+    log.info("writing catchment config files (*.ini)")
+    for cat_id, atts in catchment_atts.items():
+
+        # initialize object that will be used to
+        # create catchment-specific ini config files
+        cfe_conf = cfe_init.CFEBase(**atts)
+
+        # write ini file
+        cfe_conf.Config.no_section_headers = True
+        cfe_conf.Config.space_around_delimiters = False
+        cfe_conf.Config.preserve_key_case = True
+        conf_path = output_config_path / f"{cat_id}_config.ini"
+        cfe_conf.to_ini(conf_path)
+
+    # Create the global formulation
+    # This is used for any area that is not defined in the catchment realizations.
+    # This is unnecessary if every catchment has a catchment-realization,
+    # however it's good practice to include this anyway, just in case.
+    # In this case, we'll just use the configuration for the first catchment
+
+    # TODO output_interval should be a configurable input
+    log.debug("Creating global realization")
+    simulation_time = Time(
+        start_time=starttime.strftime("%Y-%m-%d %H:%M:%S"),
+        end_time=endtime.strftime("%Y-%m-%d %H:%M:%S"),
+        output_interval=3600,
+    )
+    # TODO: t_route config path should be a configurable input
+    #    routing = Routing(t_route_config_file_with_path="/ngen/data/config/ngen.yaml")
+
+    # create cfe formulation
+    cfe_formulation = create_cfe_formulation(
+        "{{id}}_config.ini", uses_forcing_file=False, forcing_file=""
+    )
+
+    # create sloth formulation
+    sloth_formulation = create_sloth_formulation()
+
+    # wrap cfe and sloth in bmi-multi
+    multi_formulation = create_bmi_multi_formulation(
+        [sloth_formulation, cfe_formulation]
+    )
+
+    # Create catchment realization.
+    # This consists of forcing and the multi_formulation combined into
+    # a realization. This is cast to a catchment realization and saved
+    # to a dictionary for later.
+    provider = configurations.Forcing.Provider.CSV
+    forcing_configuration = configurations.Forcing(
+        file_pattern=".*{{id}}.*.csv", path="/ngen/data/forcing/", provider=provider
+    )
+
+    realization = Realization(
+        formulations=[multi_formulation], forcing=forcing_configuration
+    )
+
+    full_ngen_realization = NgenRealization(
+        global_config=realization,
+        time=simulation_time,
+        catchments=None,
+        # routing=routing,
+        output_root=Path("/ngen/data/results"),
+    )
+    with open(output_config_path / "realization.json", "w") as f:
+        f.write(full_ngen_realization.json(by_alias=True, exclude_none=True, indent=4))
+    log.info("Created global realization")
+
+    log.debug("create_default_cfe_realization completed successfully")
+    log.debug(f"CFE Init Configs: {output_config_path}/[cat-id]_config.ini")
+    log.debug(f'Realization JSON: {output_config_path/"realization.json"}')
+
+    return True
+
+
+def create_catchment_cfe_realization(
+    noah_params_path: Path,
+    starttime: datetime,
+    endtime: datetime,
+    forcing_path: Path,
+    output_config_path: Path,
+) -> bool:
+    """
+    Creates a cfe realization consisting of catchment definitions for
+    every catchment defined in the noah_params
 
     Parameters
     ----------
@@ -149,6 +259,7 @@ def create_bmi_multi_formulation(
         allow_exceed_end_time=True,
         fixed_time_step=False,
         uses_forcing_file=False,
+        forcing_file="",
         modules=modules,
     )
     multi_params = multi.MultiBMI(**params)
@@ -165,6 +276,7 @@ def create_sloth_formulation() -> formulation.Formulation:
         allow_exceed_end_time=True,
         fixed_time_step=False,
         uses_forcing_file=False,
+        forcing_file="",
         model_params={
             "sloth_ice_fraction_schaake(1,double,m,node)": "0.0",
             "sloth_ice_fraction_xinanjiang(1,double,1,node)": "0.0",
@@ -180,15 +292,22 @@ def create_sloth_formulation() -> formulation.Formulation:
     return sloth_formulation
 
 
-def create_cfe_formulation(cat_id: str, conf_path: Path) -> formulation.Formulation:
+def create_cfe_formulation(
+    conf_path: Path,
+    allow_exceed_time=True,
+    fixed_time_step=False,
+    uses_forcing_file=True,
+    forcing_file="",
+) -> formulation.Formulation:
     cfe_params = dict(
         name="bmi_c",
-        config=conf_path,
+        config=f"/ngen/data/config/{conf_path}",
         library_file="/dmod/shared_libs/libcfebmi.so.1.0.0",
-        allow_exceed_end_time=True,
-        fixed_time_step=False,
-        uses_forcing_file=True,
-        forcing_file=f"/ngen/data/forcing/{cat_id}",
+        allow_exceed_end_time=allow_exceed_time,
+        fixed_time_step=fixed_time_step,
+        uses_forcing_file=uses_forcing_file,
+        # f"/ngen/data/forcing/{cat_id}",
+        forcing_file=forcing_file,
         variables_names_map={
             "atmosphere_water__liquid_equivalent_precipitation_rate": "precip_rate",
             "water_potential_evaporation_flux": "EVAPOTRANS",
@@ -338,7 +457,7 @@ if __name__ == "__main__":
     # end: datetime,
     # forcing_path: Path,
     # output_config_path: Path) -> str:
-    create_default_cfe_realization(
+    create_catchment_cfe_realization(
         noah_params_path,
         datetime(2020, 1, 1),
         datetime(2021, 1, 1),
