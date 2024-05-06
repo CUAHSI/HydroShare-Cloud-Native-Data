@@ -79,8 +79,9 @@ def create_global_cfe_realization(
         end_time=endtime,
         output_interval=3600,
     )
+
     # TODO: t_route config path should be a configurable input
-    #    routing = Routing(t_route_config_file_with_path="/ngen/data/config/ngen.yaml")
+    routing = Routing(t_route_config_file_with_path="/ngen/data/config/ngen.yaml")
 
     # create cfe formulation
     cfe_formulation = create_cfe_formulation(
@@ -116,7 +117,7 @@ def create_global_cfe_realization(
         global_config=realization,
         time=simulation_time,
         catchments=None,
-        # routing=routing,
+        routing=routing,
         output_root=Path("/ngen/data/results"),
     )
     with open(output_config_path / "realization.json", "w") as f:
