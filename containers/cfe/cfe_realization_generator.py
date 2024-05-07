@@ -9,8 +9,8 @@ from datetime import datetime
 from collections import OrderedDict
 
 from ngen.config.init_config import cfe as cfe_init
-from ngen.config import formulation, cfe, sloth, multi, configurations
-from ngen.config.realization import Realization, CatchmentRealization, NgenRealization
+from ngen.config import formulation, cfe, sloth, multi
+from ngen.config.realization import Realization, NgenRealization
 from ngen.config.configurations import Forcing, Time, Routing
 
 log = logging.getLogger(__name__)
@@ -21,7 +21,6 @@ def create_global_cfe_realization(
     noah_params_path: Path,
     starttime: datetime,
     endtime: datetime,
-    forcing_path: Path,
     output_config_path: Path,
 ) -> bool:
     """
@@ -35,8 +34,6 @@ def create_global_cfe_realization(
         start date of simulation
     end: datetime.datetime
         end date of simulation
-    forcing_path: pathlib.Path
-        path to the directory containing forcing files (*.csv)
     output_config_path: pathlib.Path
         path to save the output configuration files
 
@@ -102,8 +99,8 @@ def create_global_cfe_realization(
     # This consists of forcing and the multi_formulation combined into
     # a realization. This is cast to a catchment realization and saved
     # to a dictionary for later.
-    provider = configurations.Forcing.Provider.CSV
-    forcing_configuration = configurations.Forcing(
+    provider = Forcing.Provider.CSV
+    forcing_configuration = Forcing(
         file_pattern=".*{{id}}.*.csv",
         path=Path("/ngen/data/forcing/"),
         provider=provider,
@@ -119,128 +116,6 @@ def create_global_cfe_realization(
         catchments=None,
         routing=routing,
         output_root=Path("/ngen/data/results"),
-    )
-    with open(output_config_path / "realization.json", "w") as f:
-        f.write(full_ngen_realization.json(by_alias=True, exclude_none=True, indent=4))
-    log.info("Created global realization")
-
-    log.debug("create_default_cfe_realization completed successfully")
-    log.debug(f"CFE Init Configs: {output_config_path}/[cat-id]_config.ini")
-    log.debug(f'Realization JSON: {output_config_path/"realization.json"}')
-
-    return True
-
-
-def create_catchment_cfe_realization(
-    noah_params_path: Path,
-    starttime: datetime,
-    endtime: datetime,
-    forcing_path: Path,
-    output_config_path: Path,
-) -> bool:
-    """
-    Creates a cfe realization consisting of catchment definitions for
-    every catchment defined in the noah_params
-
-    Parameters
-    ----------
-    noah_params_path:  pathlib.Path
-        path to noah parameters obtained from the HydroFabric
-    start: datetime.datetime
-        start date of simulation
-    end: datetime.datetime
-        end date of simulation
-    forcing_path: pathlib.Path
-        path to the directory containing forcing files (*.csv)
-    output_config_path: pathlib.Path
-        path to save the output configuration files
-
-    """
-
-    # create output path if it doesn't exist
-    if not output_config_path.exists():
-        log.info("creating output directory for configuration files")
-        output_config_path.mkdir()
-
-    # read noah parameters
-    df_noah_params = pandas.read_csv(noah_params_path)
-    catchment_atts = parse_cfe_parameters(df_noah_params)
-
-    # loop through each catchment write ini configs
-    log.info("writing catchment config files (*.ini)")
-    cfe_confs = []
-    catchment_realizations = {}
-    for cat_id, atts in catchment_atts.items():
-
-        # initialize object that will be used to
-        # create catchment-specific ini config files
-        cfe_conf = cfe_init.CFEBase(**atts)
-
-        # write ini file
-        cfe_conf.Config.no_section_headers = True
-        conf_path = output_config_path / f"{cat_id}_config.ini"
-        cfe_conf.to_ini(conf_path)
-
-        # save for later
-        cfe_confs.append(cfe_conf)
-
-        # create cfe formulation
-        cfe_formulation = create_cfe_formulation(Path(conf_path))
-
-        # create sloth formulation
-        sloth_formulation = create_sloth_formulation()
-
-        # wrap cfe and sloth in bmi-multi
-        multi_formulation = create_bmi_multi_formulation(
-            [sloth_formulation, cfe_formulation]
-        )
-
-        # Create catchment realization.
-        # This consists of forcing and the multi_formulation combined into
-        # a realization. This is cast to a catchment realization and saved
-        # to a dictionary for later.
-        provider = configurations.Forcing.Provider.CSV
-        forcing_configuration = configurations.Forcing(
-            path=forcing_path / f"{cat_id}.csv", provider=provider
-        )
-
-        realization = Realization(
-            formulations=[multi_formulation], forcing=forcing_configuration
-        )
-        catchment_realizations[cat_id] = CatchmentRealization(
-            **realization.dict(by_alias=True)
-        )
-
-    # Create the global formulation
-    # This is used for any area that is not defined in the catchment realizations.
-    # This is unnecessary if every catchment has a catchment-realization,
-    # however it's good practice to include this anyway, just in case.
-    # In this case, we'll just use the configuration for the first catchment
-
-    # TODO output_interval should be a configurable input
-    log.debug("Creating global realization")
-    simulation_time = Time(
-        start_time=starttime,
-        end_time=endtime,
-        output_interval=3600,
-    )
-    # TODO: t_route config path should be a configurable input
-    routing = Routing(t_route_config_file_with_path="/ngen/data/config/ngen.yaml")
-
-    first_realization_dict = (
-        next(iter(catchment_realizations.values())).copy(deep=True).dict(by_alias=True)
-    )
-    first_realization_dict["forcing"]["path"] = forcing_path
-    first_realization_dict["forcing"]["file_pattern"] = ".*{{id}}.*.csv"
-    global_realization = Realization(**first_realization_dict)
-    log.info("Created global realization")
-
-    log.debug("Creating global realization")
-    full_ngen_realization = NgenRealization(
-        global_config=global_realization,
-        catchments=catchment_realizations,
-        time=simulation_time,
-        routing=routing,
     )
     with open(output_config_path / "realization.json", "w") as f:
         f.write(full_ngen_realization.json(by_alias=True, exclude_none=True, indent=4))

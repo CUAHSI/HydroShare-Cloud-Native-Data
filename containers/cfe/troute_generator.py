@@ -68,6 +68,8 @@ def create_troute_configuration(
     with open(output_file, "w") as f:
         f.write(to_yaml_str(conf, by_alias=True, exclude_none=True))
 
+    log.info(f"Configuration file written to {output_file}")
+
     return conf
 
 
@@ -80,6 +82,8 @@ def __conf_logging() -> logging_parameters.LoggingParameters:
     logging_parameters.LoggingParameters
         The logging configuration.
     """
+
+    log.info("Creating logging configuration.")
 
     log_conf = logging_parameters.LoggingParameters(log_level="DEBUG", showtiming=True)
 
@@ -102,6 +106,8 @@ def __conf_network(
     network_topology_parameters.NetworkTopologyParameters
         The network topology configuration.
     """
+
+    log.info("Creating network topology configuration.")
 
     super_conf = network_topology_parameters.SupernetworkParameters(
         geo_file_path=str(geopath),
@@ -149,6 +155,8 @@ def __conf_compute(
     compute_parameters.ComputeParameters
       The compute configuration.
     """
+
+    log.info("Creating compute configuration.")
 
     # compute number of timesteps in the simulation
     nts_per_day = 86400 / timestep_sec
@@ -216,6 +224,8 @@ def __conf_output(
     output_parameters.OutputParameters
       The output configuration.
     """
+
+    log.info("Creating output configuration.")
 
     csv = output_parameters.CsvOutput(csv_output_folder=output_path)
 
