@@ -77,7 +77,7 @@ def create_global_cfe_realization(
         output_interval=3600,
     )
 
-    # TODO: t_route config path should be a configurable input
+    # TODO: t_route config path should be a configurable input.
     routing = Routing(t_route_config_file_with_path="/ngen/data/config/ngen.yaml")
 
     # create cfe formulation
@@ -99,6 +99,7 @@ def create_global_cfe_realization(
     # This consists of forcing and the multi_formulation combined into
     # a realization. This is cast to a catchment realization and saved
     # to a dictionary for later.
+    # TODO: /ngen/data/forcing should be a configurable input
     provider = Forcing.Provider.CSV
     forcing_configuration = Forcing(
         file_pattern=".*{{id}}.*.csv",
@@ -110,6 +111,7 @@ def create_global_cfe_realization(
         formulations=[multi_formulation], forcing=forcing_configuration
     )
 
+    # TODO: /ngen/data/results should be a configurable input
     full_ngen_realization = NgenRealization(
         global_config=realization,
         time=simulation_time,
@@ -149,6 +151,7 @@ def create_bmi_multi_formulation(
 
 
 def create_sloth_formulation() -> formulation.Formulation:
+    # TODO: /dmod/shared_libs/libslothmodel.so should be a configurable input
     sloth_params = dict(
         name="bmi_c++",
         main_output_variable="z",
@@ -179,6 +182,7 @@ def create_cfe_formulation(
     uses_forcing_file=True,
     forcing_file="",
 ) -> formulation.Formulation:
+    # TODO: /dm/shared_libs/libcfebmi.so.1.0.0 should be a configurable input
     cfe_params = dict(
         name="bmi_c",
         config=conf_path,
