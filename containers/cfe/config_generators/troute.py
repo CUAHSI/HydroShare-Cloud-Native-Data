@@ -16,7 +16,6 @@ from troute.config import (
 )
 
 log = logging.getLogger(__name__)
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 def create_troute_configuration(

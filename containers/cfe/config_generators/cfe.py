@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import typing
 import pandas
 import logging
@@ -14,7 +13,6 @@ from ngen.config.realization import Realization, NgenRealization
 from ngen.config.configurations import Forcing, Time, Routing
 
 log = logging.getLogger(__name__)
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 def create_global_cfe_realization(

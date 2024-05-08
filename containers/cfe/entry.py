@@ -20,7 +20,7 @@ from config_generators import cfe, troute
 
 # set logging level
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.ERROR)
 logger.addHandler(handler)
@@ -45,6 +45,8 @@ def main(
     # set logging level
     if verbose:
         logger.setLevel(logging.INFO)
+        for handler in logger.handlers:
+            handler.setLevel(logging.INFO)
 
     # adjust the dask cluster
     logger.info(f"{n_workers} workers, {worker_memory}GB memory")
