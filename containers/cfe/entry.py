@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# import libraries
 import sys
 import dask
 import typer
@@ -10,9 +9,21 @@ import pandas
 import logging
 import geopandas
 from pathlib import Path
-import cfe_realization as r
+from datetime import datetime
 from dask.distributed import Client
 from geocube.api.core import make_geocube
+
+from pydantic_yaml import to_yaml_str
+
+from config_generators import cfe, troute
+
+
+# set logging level
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.ERROR)
+logger.addHandler(handler)
 
 
 def main(
@@ -32,15 +43,8 @@ def main(
         output_dir.mkdir()
 
     # set logging level
-    logger = logging.getLogger(__name__)
-    level = logging.ERROR
     if verbose:
-        level = logging.INFO
-
-    logger.setLevel(level)
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(level)
-    logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
 
     # adjust the dask cluster
     logger.info(f"{n_workers} workers, {worker_memory}GB memory")
@@ -118,8 +122,8 @@ def main(
 
     logger.info("Creating - realization files")
     create_realization(
-        pandas.to_datetime(ds.time.values.min()),
-        pandas.to_datetime(ds.time.values.max()),
+        pandas.to_datetime(ds.time.values.min()).to_pydatetime(),
+        pandas.to_datetime(ds.time.values.max()).to_pydatetime(),
         geopackage,
         cfe_attrs_path,
         output_dir,
@@ -214,45 +218,59 @@ def save_to_csv(results, cat_id, output_dir):
         )
 
 
-def create_realization(start_time, end_time, geopackage, cfe_attrs_path, output_dir):
-
-    # read spatial geometries
-    catchments = geopandas.read_file(geopackage, layer="divides")
-    rivers = geopandas.read_file(geopackage, layer="flowpaths")
-
-    # define the target projection as EPSG:4269 - Web Mercator
-    # this is the default crs for leaflet
-    target_crs = pyproj.Proj("4269")
-
-    # transform the shapefile into EPSG:4269
-    catchments = catchments.to_crs(target_crs.crs)
-    rivers = rivers.to_crs(target_crs.crs)
-
-    ts_in_sec = 300  # Number of timesteps (288 for 1 day)
-    output_interval = 3600
-    time = {
-        "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
-        "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
-        "output_interval": output_interval,
-        "nts": int((end_time - start_time).total_seconds() / ts_in_sec),
-    }
+def create_realization(
+    start_time,
+    end_time,
+    geopackage,
+    cfe_attrs_path,
+    output_dir,
+    routing_timestep_in_sec=300,
+):
 
     outpath = Path(output_dir / "config")
     if not outpath.exists():
         outpath.mkdir()
 
-    r.create_cfe_realization(
-        output_dir / "config",
-        geopackage.name,
-        cfe_attrs_path,
-        time=time,
-        config_path="/ngen/data/config",
-        forcing_path="/ngen/data/forcing",
-        troute_path="/ngen/data/config/ngen.yaml",
-        binary_path=Path("/dmod/shared_libs"),
+    # generate T-Route configuration
+    tconf = troute.create_troute_configuration(
+        simulation_start=start_time,
+        simulation_end=end_time,
+        timestep_in_seconds=routing_timestep_in_sec,
+        geopackage_path=geopackage,
+        input_data_path=Path("/ngen/data/results"),
+        output_file=output_dir / "config/ngen.yaml",
     )
 
-    pass
+    # need to fix some errors in the T-ROUTE pydantic classes
+
+    # network topology parameters are not set correctly when using the T-Route
+    # pydantic classes. Load the class and manually remove "mainstem" from
+    # the columns dictionary.
+    # ----
+    #     network_topology_parameters -> supernetwork_parameters -> columns -> mainstem
+    #       extra fields not permitted (type=value_error.extra)
+    _ = tconf.network_topology_parameters.supernetwork_parameters.columns.pop(
+        "mainstem"
+    )
+
+    # datetimes are not formated properly in the compute_parameters class
+    # ----
+    # compute_parameters -> restart_parameters -> start_datetime
+    #   datetime field must be specified as `datetime.datetime` object or string with
+    #   format ('%Y-%m-%d_%H:%M', '%Y-%m-%d_%H:%M:%S', '%Y-%m-%d %H:%M',
+    #   '%Y-%m-%d %H:%M:%S', '%Y/%m/%d %H:%M', '%Y/%m/%d %H:%M:%S') (type=value_error)
+    dt = tconf.compute_parameters.restart_parameters.start_datetime
+    tconf.compute_parameters.restart_parameters.start_datetime = datetime.strftime(
+        dt, "%Y-%m-%d %H:%M:%S"
+    )
+
+    with open(outpath / "ngen.yaml", "w") as f:
+        f.write(to_yaml_str(tconf, by_alias=True, exclude_none=True, sort_keys=False))
+
+    # create CFE configuration
+    cfe.create_global_cfe_realization(
+        cfe_attrs_path, start_time, end_time, output_dir / "config"
+    )
 
 
 if __name__ == "__main__":
