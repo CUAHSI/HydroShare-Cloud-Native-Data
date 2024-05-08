@@ -233,12 +233,16 @@ def create_realization(
     if not outpath.exists():
         outpath.mkdir()
 
+    # TODO: make geopackage_root_dir configurable
+    geopackage_root_dir = Path("ngen/data/config")
+    geopackage_name = geopackage.name
+
     # generate T-Route configuration
     tconf = troute.create_troute_configuration(
         simulation_start=start_time,
         simulation_end=end_time,
         timestep_in_seconds=routing_timestep_in_sec,
-        geopackage_path=geopackage,
+        geopackage_path=geopackage_root_dir / geopackage_name,
         input_data_path=Path("/ngen/data/results"),
         output_file=output_dir / "config/ngen.yaml",
     )
