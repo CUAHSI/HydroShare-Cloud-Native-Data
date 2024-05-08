@@ -234,7 +234,7 @@ def create_realization(
         outpath.mkdir()
 
     # TODO: make geopackage_root_dir configurable
-    geopackage_root_dir = Path("/ngen/data/config")
+    geopackage_root_dir = Path("/ngen/data/domain")
     geopackage_name = geopackage.name
 
     # generate T-Route configuration
