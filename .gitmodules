@@ -1,0 +1,3 @@
+[submodule "containers/cfe/ngen-cal"]
+	path = containers/cfe/ngen-cal
+	url = https://github.com/NOAA-OWP/ngen-cal.git
