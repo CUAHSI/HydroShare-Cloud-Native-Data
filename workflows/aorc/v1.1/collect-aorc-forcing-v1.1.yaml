@@ -2,8 +2,8 @@ metadata:
   name: collect-aorc-forcing-v1.1
   namespace: workflows
   uid: 7a3c73aa-b714-4a50-b42c-952be475f0d2
-  resourceVersion: '356961596'
-  generation: 4
+  resourceVersion: '502634386'
+  generation: 12
   creationTimestamp: '2023-11-30T16:46:48Z'
   labels:
     workflows.argoproj.io/creator: '116317613255759624565'
@@ -11,7 +11,7 @@ metadata:
     - manager: argo
       operation: Update
       apiVersion: argoproj.io/v1alpha1
-      time: '2023-12-21T18:30:39Z'
+      time: '2024-05-16T00:55:04Z'
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -28,20 +28,20 @@ spec:
             value: '{{workflow.parameters.shape-file-path}}'
           - name: output-bucket
             value: '{{workflow.parameters.output_bucket}}'
+          - name: input-bucket
+            value: '{{workflow.parameters.input_bucket}}'
           - name: output-path
             value: '{{workflow.parameters.output_path}}'
           - name: start-date
             value: '{{workflow.parameters.start-date}}'
           - name: end-date
             value: '{{workflow.parameters.end-date}}'
-          - name: aorc-secret
-            value: '{{workflow.parameters.aorc-secret}}'
         artifacts:
           - name: shapefile-input
-            path: /output
+            path: /input
             s3:
               endpoint: api.minio.cuahsi.io
-              bucket: subsetter-outputs
+              bucket: '{{inputs.parameters.input-bucket}}'
               accessKeySecret:
                 name: minio-credentials
                 key: accessKey
@@ -68,33 +68,19 @@ spec:
       metadata: {}
       container:
         name: ''
-        image: us-central1-docker.pkg.dev/apps-320517/subsetter/aorc:0.0.2
+        image: cuahsi/aorc-v1.1:20240515_2
         command:
-          - /bin/sh
-          - '-c'
+          - python
+          - '-u'
+          - entry.py
         args:
-          - python /app/collect-aorc-forcing-v1.1.py
+          - '{{inputs.parameters.start-date}}'
+          - '{{inputs.parameters.end-date}}'
+          - /input/watershed.shp
+          - s3://noaa-nwm-retrospective-3-0-pds
+          - /output/forcing.nc
         ports:
           - containerPort: 8787
-        env:
-          - name: KEY
-            value: AKIATL6IACWUADAFYDMC
-          - name: SECRET
-            value: '{{inputs.parameters.aorc-secret}}'
-          - name: BUCKET_URL
-            value: s3://aorc-v1.1-zarr-1-year/
-          - name: SHAPE_FILE
-            value: /output/watershed.shp
-          - name: START_DATE
-            value: '{{inputs.parameters.start-date}}'
-          - name: END_DATE
-            value: '{{inputs.parameters.end-date}}'
-          - name: OUTPUT_FILE
-            value: /output/results.nc
-          - name: N_WORKERS
-            value: '2'
-          - name: MEMORY_LIMIT
-            value: 4GB
         resources:
           requests:
             cpu: '2'
@@ -108,13 +94,13 @@ spec:
       - name: end-date
         value: '2020-01-10'
       - name: output_bucket
-        value: subsetter-outputs
+        value: acastronova
+      - name: input_bucket
+        value: acastronova
       - name: output_path
-        value: acastronova/wb-2917533/forcing
+        value: wb-2853612/forcing
       - name: shape-file-path
-        value: acastronova/wb-2917533/domain/watershed.gz
-      - name: aorc-secret
-        value: [MY-BUCKET-SECRET-TOKEN]
+        value: wb-2853612/domain/watershed.gz
   templateDefaults:
     inputs: {}
     outputs: {}
@@ -122,3 +108,4 @@ spec:
     retryStrategy:
       limit: '0'
     timeout: 600s
+
