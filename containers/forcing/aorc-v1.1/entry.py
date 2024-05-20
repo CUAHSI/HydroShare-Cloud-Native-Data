@@ -84,6 +84,14 @@ def clip_zarr(ds: xr.Dataset, gdf: geopandas.GeoDataFrame) -> xr.Dataset:
     # to ensure that data for the correct spatial location is extracted.
     gdf = gdf.to_crs(ds.rio.crs)
 
+    # remove grid_mapping attribute from variables
+    # ValueError: failed to prevent overwriting existing key grid_mapping in attrs. This is
+    #             probably an encoding field used by xarray to describe how a variable is serialized. To
+    #             proceed, remove this key from the variable's attributes manually.
+    vars_list = list(ds.data_vars)
+    for var in vars_list:
+        del ds[var].attrs["grid_mapping"]
+
     # Perform clip operation to isolate the region of the zarr
     # dataset that intersects with the input watershed geometry.
     # Using 'all_touched=True' to select all grid cells that are within or touch
