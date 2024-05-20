@@ -10,6 +10,8 @@ import logging
 import geopandas
 from pathlib import Path
 from datetime import datetime
+
+from dask import delayed, compute
 from dask.distributed import Client
 from geocube.api.core import make_geocube
 
@@ -37,6 +39,8 @@ def main(
     worker_memory: int = typer.Argument(4, help="Max memory per worker (GB)"),
     verbose: bool = typer.Option(default=False, help="Turn on verbose stdoout"),
 ):
+
+    global client
 
     # create output directory
     if not output_dir.exists():
@@ -73,8 +77,8 @@ def main(
 
     logger.info("Computing - basin averages")
     # compute basin averaged values
-    delayed = delayed_zonal_computation(scattered_zonal_ds)
-    ds = delayed.compute()
+    future = delayed_zonal_computation(scattered_zonal_ds)
+    ds = future.compute()
 
     # clean up
     del scattered_zonal_ds
@@ -93,7 +97,7 @@ def main(
     delayed_write = []
     for cat_id in ds.cat.values:
         delayed_write.append(save_to_csv(results_scattered, cat_id, forcing_path))
-    _ = dask.compute(delayed_write)
+    _ = compute(delayed_write)
 
     # compute synthetic data for missing catchments
     logger.info("Computing - synthetic forcing for missing catchments")
@@ -169,7 +173,7 @@ def load_gdf(geopackage):
     return gdf
 
 
-@dask.delayed
+@delayed
 def prepare_zonal(in_ds, gdf):
 
     # create zonal id column
@@ -192,12 +196,12 @@ def prepare_zonal(in_ds, gdf):
     return in_ds
 
 
-@dask.delayed
+@delayed
 def delayed_zonal_computation(ds):
     return ds.groupby(ds.cat).mean()
 
 
-@dask.delayed
+@delayed
 def save_to_csv(results, cat_id, output_dir):
     fname = f"cat-{int(cat_id)}"
     with open(f"{output_dir}/{fname}.csv", "w") as f:
@@ -281,6 +285,6 @@ def create_realization(
 
 if __name__ == "__main__":
 
-    # TODO; move n_workers and memory limit to inputs.
     client = Client(n_workers=1)
+
     typer.run(main)
