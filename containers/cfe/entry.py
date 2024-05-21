@@ -137,40 +137,19 @@ def main(
 
 
 def load_data(forcing, geopackage):
-    ds = load_ds(forcing)
-    gdf = load_gdf(geopackage)
-    return ds, gdf
 
-
-def load_ds(forcing):
-
-    # load forcing data
+    # Load the netcdf forcing data and
+    # set its crs from the esri_pe_string attribute
     ds = xarray.open_dataset(forcing)
+    ds.rio.write_crs(ds.crs.attrs["crs_wkt"], inplace=True)
 
-    return ds
-
-
-def load_gdf(geopackage):
-
-    # load hydrofabric
+    # Load the geopackage and
+    # set its crs to match the forcing crs.
+    # This is necessary for the geocube zonal stats to work
     gdf = geopandas.read_file(geopackage, layer="divides")
+    gdf.to_crs(ds.rio.crs, inplace=True)
 
-    # convert these data into the projection of our forcing data
-    # this assumes that we're using AORC forcing.
-    # TODO: generalize this to use whatever projection is defined in the
-    # forcing dataset
-    target_crs = pyproj.Proj(
-        proj="lcc",
-        lat_1=30.0,
-        lat_2=60.0,
-        lat_0=40.0000076293945,
-        lon_0=-97.0,
-        a=6370000,
-        b=6370000,
-    )
-    gdf = gdf.to_crs(target_crs.crs)
-
-    return gdf
+    return ds, gdf
 
 
 @delayed
@@ -178,10 +157,6 @@ def prepare_zonal(in_ds, gdf):
 
     # create zonal id column
     gdf["cat"] = gdf.id.str.split("-").str[-1].astype(int)
-
-    # set the aorc crs.
-    # TODO: This should be set when the dataset is saved, not here.
-    in_ds = in_ds.rio.write_crs("EPSG:4326", inplace=True)
 
     # create a grid for the geocube
     out_grid = make_geocube(
