@@ -8,7 +8,7 @@ RUN apt update && apt install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
-COPY requirements.txt /tmp/requirements.txt
+COPY docker/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
 # Install NGEN-CAL and T-ROUTE configurations
@@ -22,7 +22,7 @@ RUN mkdir /srv/output
 RUN mkdir /srv/input
 
 # Copy source code
-COPY ../src /srv
+COPY src /srv
 
 WORKDIR /srv
 ENTRYPOINT ["python", \
