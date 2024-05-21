@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 
 import sys
-import dask
 import typer
-import pyproj
 import xarray
 import pandas
 import logging
 import geopandas
 from pathlib import Path
 from datetime import datetime
-
-from dask import delayed, compute
+from dask.base import compute
+from dask.delayed import delayed
 from dask.distributed import Client
+from pydantic_yaml import to_yaml_str
 from geocube.api.core import make_geocube
 
-from pydantic_yaml import to_yaml_str
 
 from config_generators import cfe, troute
 
@@ -182,14 +180,38 @@ def save_to_csv(results, cat_id, output_dir):
     with open(f"{output_dir}/{fname}.csv", "w") as f:
         df = results.sel(dict(cat=cat_id)).to_dataframe()
         df.fillna(0.0, inplace=True)
-        df["precip_rate"] = df.APCP_surface
+
+        # convert rainrate from mm/s to kg/m2
+        # mm/s - mm/hr = df.RAINRATE * 3600
+        # since the timestep is one hour, this is effectively the total rain in mm.
+        # 1 mm of rainfall is equal to 1kg/m2 so our conversion is:
+        # NOTE: we should only be considering the fraction of liquid precip which can
+        #       be computed using LQFRAC. However LQFRAC is zero for our data which
+        #       does not seem correct, so we'll assume that all precip is liquid. This
+        #       is something that needs to be revisited.
+        df["APCP_surface"] = df.RAINRATE * 3600
+
+        # rename columns to match the variable names expected by the ngen t-shirt model
+        df.rename(
+            columns={
+                "LWDOWN": "DLWRF_surface",
+                "PSFC": "PRES_surface",
+                "Q2D": "SPFH_2maboveground",
+                "SWDOWN": "DSWRF_surface",
+                "T2D": "TMP_2maboveground",
+                "U2D": "UGRD_10maboveground",
+                "V2D": "VGRD_10maboveground",
+                "RAINRATE": "precip_rate",
+            },
+            inplace=True,
+        )
+
         df.to_csv(
             f,
             columns=[
                 "APCP_surface",
                 "DLWRF_surface",
                 "DSWRF_surface",
-                #                                'PRES_surface',
                 "SPFH_2maboveground",
                 "TMP_2maboveground",
                 "UGRD_10maboveground",
