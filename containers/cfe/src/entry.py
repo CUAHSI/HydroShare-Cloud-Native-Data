@@ -164,7 +164,7 @@ def prepare_zonal(in_ds, gdf):
     )
 
     # add the catchment variable to the original dataset
-    in_ds = in_ds.assign_coords(cat=(["latitude", "longitude"], out_grid.cat.data))
+    in_ds = in_ds.assign_coords(cat=(["y", "x"], out_grid.cat.data))
 
     return in_ds
 
