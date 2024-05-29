@@ -23,6 +23,9 @@ import shapely
 from shapely.geometry import box
 #import pynhd as nhd
 
+import textwrap
+from tabulate import tabulate
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -40,6 +43,15 @@ class ArgoAPI():
         self.info_api_instance = None
 
         self.__configure_client()
+
+        # print out some user info
+        info = self.user_info()
+        table_data = [['Status', 'Connected'],
+                      ['Name', info['name']],
+                      ['Email', info['email']]]
+        print('User Info')
+        print(tabulate(table_data, tablefmt='rounded_outline'))
+        
         
         
     def __configure_client(self):
@@ -97,8 +109,30 @@ class ArgoAPI():
         phase    = submitted_workflow.status.phase
         progress = submitted_workflow.status.progress
         return progress, phase
-        
-        
+    
+    def display_workflow_metadata(self, name):
+        table_data = []
+        meta = self.get_workflow_metadata(name).metadata
+        if hasattr(meta, 'annotations'):
+            for k, v in meta.annotations.items():
+                if (label := k.split('/'))[0] == 'cuahsi':
+                    wrapped_val = textwrap.wrap(v, 80)
+                    wrapped_label = [label[1]] + ['\n']*(len(wrapped_val)-1)
+                    for i in range(0, len(wrapped_label)):
+                        table_data.append([wrapped_label[i], wrapped_val[i]])
+        print(tabulate(table_data, headers=['Key', 'Value'], tablefmt='rounded_outline'))        
+    
+    def display_workflow_parameters(self, name):
+        params = self.get_workflow_parameters(name)
+        table_data = []
+        for d in params:
+            wrapped_desc = textwrap.wrap(d.description, 80)
+            wrapped_label = [d.name] + ['\n']*(len(wrapped_desc)-1)
+            wrapped_default = [d.value] + ['\n']*(len(wrapped_desc)-1)
+            for i in range(0, len(wrapped_label)):
+                table_data.append([wrapped_label[i], wrapped_default[i], wrapped_desc[i]])
+            #table_data.append([d.name, d.value, d.description])
+        print(tabulate(table_data, headers=['Variable', 'Default', 'Description'], tablefmt='rounded_outline'))
         
 
 
