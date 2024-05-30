@@ -34,25 +34,27 @@ class ArgoAPI():
     def __init__(self, token, namespace='workflows'):
         self.bearer_token = token
         self.namespace = namespace
-        self.configuration = swagger_client.Configuration()
-        self.configuration.api_key['Authorization'] = token
-        self.configuration.host = "https://workflows.argo.cuahsi.io"
-        
         self.template_api_instance = None
         self.workflow_api_instance = None
         self.info_api_instance = None
 
-        self.__configure_client()
-
-        # print out some user info
-        info = self.user_info()
-        table_data = [['Status', 'Connected'],
-                      ['Name', info['name']],
-                      ['Email', info['email']]]
-        print('User Info')
-        print(tabulate(table_data, tablefmt='rounded_outline'))
+        try:
+            self.configuration = swagger_client.Configuration()
+            self.configuration.api_key['Authorization'] = token
+            self.configuration.host = "https://workflows.argo.cuahsi.io"
         
-        
+            self.__configure_client()
+    
+            # print out some user info
+            info = self.user_info()
+            table_data = [['Status', 'Connected'],
+                          ['Name', info['name']],
+                          ['Email', info['email']]]
+            print('User Info')
+            print(tabulate(table_data, tablefmt='rounded_outline'))
+            
+        except Exception:        
+            print(tabulate([['Failed to Connect to Argo!']], tablefmt='rounded_outline'))
         
     def __configure_client(self):
         
@@ -67,19 +69,46 @@ class ArgoAPI():
         return {'name' : info.name,
                 'email': info.email}
 
+    def describe(self, workflow_name):
+        self.display_workflow_metadata(workflow_name)
+        self.display_workflow_parameters(workflow_name)
+        
     def list_workflows(self, return_json=False):   
         try:
             api_response = self.template_api_instance.workflow_template_service_list_workflow_templates(self.namespace)
 
             if not return_json:
-                return [item.metadata.name for item in api_response.items]
+                table_data = []
+                for item in api_response.items:
+                    metadata = item.metadata
+                    if metadata.annotations is not None:
 
-            return api_response
+                        # skip workflows that don't have a version and 'alpha' version.
+                        version = metadata.annotations.get('cuahsi/version', None)
+                        if (version is None) or (version == 'alpha'):
+                            continue
+                            
+                        if 'cuahsi/description' in metadata.annotations.keys():
+                            v = metadata.annotations['cuahsi/description']
+                            wrapped_val = textwrap.wrap(v, 60)
+                            wrapped_label = [metadata.name] + ['\n']*(len(wrapped_val)-1)
+                            wrapped_version = [version] + ['\n']*(len(wrapped_val)-1)
+                            for i in range(0, len(wrapped_label)):
+                                table_data.append([wrapped_label[i], wrapped_version[i], wrapped_val[i]])
+                        else:
+                            table_data.append([metadata.name, version, ''])
+                        table_data.append(['', '', ''])
+                if len(table_data) > 0:
+                    print(tabulate(table_data,
+                                   headers=['Workflow Name', 'Workflow Version', 'Workflow Description'],
+                                   tablefmt='rounded_outline',
+                                   maxcolwidths=[None, 80]))
+            else:
+                return api_response
         
         except ApiException as e:
-            print("Exception when calling WorkflowTemplateServiceApi->workflow_template_service_list_workflow_templates: %s\n" % e)
-            return []
-
+            print("Exception when calling WorkflowTemplateServiceApi->workflow_template_service_list_workflow_templates: %s\n" % e)            
+    
     def get_workflow_metadata(self, name):
         workflows = self.list_workflows(return_json=True)
         return next((item for item in workflows.items if item.metadata.name == name), None)
@@ -120,7 +149,7 @@ class ArgoAPI():
                     wrapped_label = [label[1]] + ['\n']*(len(wrapped_val)-1)
                     for i in range(0, len(wrapped_label)):
                         table_data.append([wrapped_label[i], wrapped_val[i]])
-        print(tabulate(table_data, headers=['Key', 'Value'], tablefmt='rounded_outline'))        
+        print(tabulate(table_data, headers=['Metadata Key', 'Value'], tablefmt='rounded_outline'))        
     
     def display_workflow_parameters(self, name):
         params = self.get_workflow_parameters(name)
@@ -132,7 +161,36 @@ class ArgoAPI():
             for i in range(0, len(wrapped_label)):
                 table_data.append([wrapped_label[i], wrapped_default[i], wrapped_desc[i]])
             #table_data.append([d.name, d.value, d.description])
-        print(tabulate(table_data, headers=['Variable', 'Default', 'Description'], tablefmt='rounded_outline'))
+        print(tabulate(table_data, headers=['Input', 'Default Value', 'Description'], tablefmt='rounded_outline'))
+    
+    def __get_node(self, name):
+        w = self.workflow_api_instance.workflow_service_get_workflow(self.namespace, name)
+        return w.status.nodes[name]
+        
+    def __collect_nodes(self, name, d):
+        
+        node = self.__get_node(name)
+        children = node.children
+        if node.display_name[-3:] != '(0)':    
+            d[node.display_name] = node.id 
+        if children is not None:
+            for child in children:
+                self.__collect_nodes(child, d)
+        return d
+    
+    def print_workflow_status(self, job_name):
+        job_ids = self.__collect_nodes(job_name, {})
+        statuses = []
+        for display_name, name in job_ids.items():
+            node = self.__get_node(name)
+            statuses.append(node.phase)
+            if node.phase == 'Succeeded':
+                st = datetime.strptime(node.started_at, '%Y-%m-%dT%H:%M:%SZ')
+                et = datetime.strptime(node.finished_at, '%Y-%m-%dT%H:%M:%SZ')
+                print(f'{display_name}: {node.phase} -> {(et-st).total_seconds():.2f} seconds')
+            else:
+                print(f'{display_name}: {node.phase}')
+        return statuses
         
 
 
