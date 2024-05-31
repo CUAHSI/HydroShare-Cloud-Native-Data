@@ -7,7 +7,9 @@ This script provides helper functions for submitting jobs to CUAHSI's Argo Workf
 
 from __future__ import print_function
 
+import fsspec
 import swagger_client
+from pathlib import Path
 from pprint import pprint
 from datetime import datetime
 from swagger_client.rest import ApiException
@@ -21,7 +23,6 @@ from ipywidgets import Layout
 
 import shapely
 from shapely.geometry import box
-#import pynhd as nhd
 
 import textwrap
 from tabulate import tabulate
@@ -37,6 +38,13 @@ class ArgoAPI():
         self.template_api_instance = None
         self.workflow_api_instance = None
         self.info_api_instance = None
+
+        # connect to the CUAHSI MinIO server that is hosting our data
+        self.s3 = fsspec.filesystem("s3",
+                               anon=True,
+                               client_kwargs={'endpoint_url':'https://api.minio.cuahsi.io'},
+                               use_listings_cache=False,
+                              )
 
         try:
             self.configuration = swagger_client.Configuration()
@@ -162,45 +170,57 @@ class ArgoAPI():
                 table_data.append([wrapped_label[i], wrapped_default[i], wrapped_desc[i]])
             #table_data.append([d.name, d.value, d.description])
         print(tabulate(table_data, headers=['Input', 'Default Value', 'Description'], tablefmt='rounded_outline'))
-    
-    def __get_node(self, name):
-        w = self.workflow_api_instance.workflow_service_get_workflow(self.namespace, name)
-        return w.status.nodes[name]
         
-    def __collect_nodes(self, name, d):
+    def __collect_nodes(self, w, name, d):
         
-        node = self.__get_node(name)
+        node = w.status.nodes[name]
         children = node.children
         if node.display_name[-3:] != '(0)':    
             d[node.display_name] = node.id 
         if children is not None:
             for child in children:
-                self.__collect_nodes(child, d)
+                self.__collect_nodes(w, child, d)
         return d
     
-    def print_workflow_status(self, job_name):
-        job_ids = self.__collect_nodes(job_name, {})
-        statuses = []
+    def workflow_status(self, job_name):
+        w = self.workflow_api_instance.workflow_service_get_workflow(self.namespace, job_name)
+        job_ids = self.__collect_nodes(w, job_name, {})
         for display_name, name in job_ids.items():
-            node = self.__get_node(name)
-            statuses.append(node.phase)
+            node = w.status.nodes[name]
             if node.phase == 'Succeeded':
                 st = datetime.strptime(node.started_at, '%Y-%m-%dT%H:%M:%SZ')
                 et = datetime.strptime(node.finished_at, '%Y-%m-%dT%H:%M:%SZ')
                 print(f'{display_name}: {node.phase} -> {(et-st).total_seconds():.2f} seconds')
             else:
                 print(f'{display_name}: {node.phase}')
-        return statuses
+
+    def list_output_files(self, url, indent_count=0):
+
+            items = self.s3.listdir(url)
+            for item in items:
+                if item['type'] == 'directory':
+                    indent = ' '*indent_count
+                    name = Path(item['name']).name
+                    print(f'{indent}+ {name}')
+                    next_indent_count = indent_count + 1
+                    self.list_output_files(item['Key'], next_indent_count)
+                else:
+                    if item['type'] == 'file':
+                        indent = ' '*indent_count
+                        name = Path(item['name']).name
+                        print(f'{indent}- {name}')
         
 
 
 class SideCarMap():
-    def __init__(self, basemap=ipyleaflet.basemaps.OpenStreetMap.Mapnik, gdf=None, plot_gdf=False):
+    def __init__(self, basemap=ipyleaflet.basemaps.OpenStreetMap.Mapnik, gdf=None, plot_gdf=False, name='Map'):
         self.selected_id = None
+        self.selected_layer = None
         self.map = None
         self.basemap = basemap
         self.gdf = gdf
         self.plot_gdf = False
+        self.name = name
 
     def display_map(self):
         defaultLayout=Layout(width='960px', height='940px')
@@ -259,7 +279,7 @@ class SideCarMap():
 
                 print(f'{time.time() - st:0.2f} sec')
 
-        sc = Sidecar(title='NHD+ River Reaches')
+        sc = Sidecar(title=self.name)
         with sc:
             display(self.map)
         
@@ -281,8 +301,10 @@ class SideCarMap():
 
             try:
                 # remove the previously selected layers
-                while len(self.map.layers) > 3:
-                    self.map.remove(self.map.layers[-1]);
+                if self.selected_layer is not None:
+                    self.map.remove(self.selected_layer)
+                # while len(self.map.layers) > 3:
+                #     self.map.remove(self.map.layers[-1]);
                 
                 # query the FIM reach that intersects with the point
                 print('intersecting...')
@@ -296,6 +318,7 @@ class SideCarMap():
                     wkt_string=self.selected().geometry.wkt,
                     style={'color': 'green', 'opacity':1, 'weight':2.,})
                 self.map.add(wlayer)
+                self.selected_layer = self.map.layers[-1]
                 
             except Exception: 
                 print('Could not find reach for selected area')
