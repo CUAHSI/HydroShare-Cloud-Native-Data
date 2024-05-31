@@ -7,7 +7,9 @@ This script provides helper functions for submitting jobs to CUAHSI's Argo Workf
 
 from __future__ import print_function
 
+import fsspec
 import swagger_client
+from pathlib import Path
 from pprint import pprint
 from datetime import datetime
 from swagger_client.rest import ApiException
@@ -21,7 +23,6 @@ from ipywidgets import Layout
 
 import shapely
 from shapely.geometry import box
-#import pynhd as nhd
 
 import textwrap
 from tabulate import tabulate
@@ -34,25 +35,34 @@ class ArgoAPI():
     def __init__(self, token, namespace='workflows'):
         self.bearer_token = token
         self.namespace = namespace
-        self.configuration = swagger_client.Configuration()
-        self.configuration.api_key['Authorization'] = token
-        self.configuration.host = "https://workflows.argo.cuahsi.io"
-        
         self.template_api_instance = None
         self.workflow_api_instance = None
         self.info_api_instance = None
 
-        self.__configure_client()
+        # connect to the CUAHSI MinIO server that is hosting our data
+        self.s3 = fsspec.filesystem("s3",
+                               anon=True,
+                               client_kwargs={'endpoint_url':'https://api.minio.cuahsi.io'},
+                               use_listings_cache=False,
+                              )
 
-        # print out some user info
-        info = self.user_info()
-        table_data = [['Status', 'Connected'],
-                      ['Name', info['name']],
-                      ['Email', info['email']]]
-        print('User Info')
-        print(tabulate(table_data, tablefmt='rounded_outline'))
+        try:
+            self.configuration = swagger_client.Configuration()
+            self.configuration.api_key['Authorization'] = token
+            self.configuration.host = "https://workflows.argo.cuahsi.io"
         
-        
+            self.__configure_client()
+    
+            # print out some user info
+            info = self.user_info()
+            table_data = [['Status', 'Connected'],
+                          ['Name', info['name']],
+                          ['Email', info['email']]]
+            print('User Info')
+            print(tabulate(table_data, tablefmt='rounded_outline'))
+            
+        except Exception:        
+            print(tabulate([['Failed to Connect to Argo!']], tablefmt='rounded_outline'))
         
     def __configure_client(self):
         
@@ -67,19 +77,46 @@ class ArgoAPI():
         return {'name' : info.name,
                 'email': info.email}
 
+    def describe(self, workflow_name):
+        self.display_workflow_metadata(workflow_name)
+        self.display_workflow_parameters(workflow_name)
+        
     def list_workflows(self, return_json=False):   
         try:
             api_response = self.template_api_instance.workflow_template_service_list_workflow_templates(self.namespace)
 
             if not return_json:
-                return [item.metadata.name for item in api_response.items]
+                table_data = []
+                for item in api_response.items:
+                    metadata = item.metadata
+                    if metadata.annotations is not None:
 
-            return api_response
+                        # skip workflows that don't have a version and 'alpha' version.
+                        version = metadata.annotations.get('cuahsi/version', None)
+                        if (version is None) or (version == 'alpha'):
+                            continue
+                            
+                        if 'cuahsi/description' in metadata.annotations.keys():
+                            v = metadata.annotations['cuahsi/description']
+                            wrapped_val = textwrap.wrap(v, 60)
+                            wrapped_label = [metadata.name] + ['\n']*(len(wrapped_val)-1)
+                            wrapped_version = [version] + ['\n']*(len(wrapped_val)-1)
+                            for i in range(0, len(wrapped_label)):
+                                table_data.append([wrapped_label[i], wrapped_version[i], wrapped_val[i]])
+                        else:
+                            table_data.append([metadata.name, version, ''])
+                        table_data.append(['', '', ''])
+                if len(table_data) > 0:
+                    print(tabulate(table_data,
+                                   headers=['Workflow Name', 'Workflow Version', 'Workflow Description'],
+                                   tablefmt='rounded_outline',
+                                   maxcolwidths=[None, 80]))
+            else:
+                return api_response
         
         except ApiException as e:
-            print("Exception when calling WorkflowTemplateServiceApi->workflow_template_service_list_workflow_templates: %s\n" % e)
-            return []
-
+            print("Exception when calling WorkflowTemplateServiceApi->workflow_template_service_list_workflow_templates: %s\n" % e)            
+    
     def get_workflow_metadata(self, name):
         workflows = self.list_workflows(return_json=True)
         return next((item for item in workflows.items if item.metadata.name == name), None)
@@ -120,7 +157,7 @@ class ArgoAPI():
                     wrapped_label = [label[1]] + ['\n']*(len(wrapped_val)-1)
                     for i in range(0, len(wrapped_label)):
                         table_data.append([wrapped_label[i], wrapped_val[i]])
-        print(tabulate(table_data, headers=['Key', 'Value'], tablefmt='rounded_outline'))        
+        print(tabulate(table_data, headers=['Metadata Key', 'Value'], tablefmt='rounded_outline'))        
     
     def display_workflow_parameters(self, name):
         params = self.get_workflow_parameters(name)
@@ -132,17 +169,58 @@ class ArgoAPI():
             for i in range(0, len(wrapped_label)):
                 table_data.append([wrapped_label[i], wrapped_default[i], wrapped_desc[i]])
             #table_data.append([d.name, d.value, d.description])
-        print(tabulate(table_data, headers=['Variable', 'Default', 'Description'], tablefmt='rounded_outline'))
+        print(tabulate(table_data, headers=['Input', 'Default Value', 'Description'], tablefmt='rounded_outline'))
+        
+    def __collect_nodes(self, w, name, d):
+        
+        node = w.status.nodes[name]
+        children = node.children
+        if node.display_name[-3:] != '(0)':    
+            d[node.display_name] = node.id 
+        if children is not None:
+            for child in children:
+                self.__collect_nodes(w, child, d)
+        return d
+    
+    def workflow_status(self, job_name):
+        w = self.workflow_api_instance.workflow_service_get_workflow(self.namespace, job_name)
+        job_ids = self.__collect_nodes(w, job_name, {})
+        for display_name, name in job_ids.items():
+            node = w.status.nodes[name]
+            if node.phase == 'Succeeded':
+                st = datetime.strptime(node.started_at, '%Y-%m-%dT%H:%M:%SZ')
+                et = datetime.strptime(node.finished_at, '%Y-%m-%dT%H:%M:%SZ')
+                print(f'{display_name}: {node.phase} -> {(et-st).total_seconds():.2f} seconds')
+            else:
+                print(f'{display_name}: {node.phase}')
+
+    def list_output_files(self, url, indent_count=0):
+
+            items = self.s3.listdir(url)
+            for item in items:
+                if item['type'] == 'directory':
+                    indent = ' '*indent_count
+                    name = Path(item['name']).name
+                    print(f'{indent}+ {name}')
+                    next_indent_count = indent_count + 1
+                    self.list_output_files(item['Key'], next_indent_count)
+                else:
+                    if item['type'] == 'file':
+                        indent = ' '*indent_count
+                        name = Path(item['name']).name
+                        print(f'{indent}- {name}')
         
 
 
 class SideCarMap():
-    def __init__(self, basemap=ipyleaflet.basemaps.OpenStreetMap.Mapnik, gdf=None, plot_gdf=False):
+    def __init__(self, basemap=ipyleaflet.basemaps.OpenStreetMap.Mapnik, gdf=None, plot_gdf=False, name='Map'):
         self.selected_id = None
+        self.selected_layer = None
         self.map = None
         self.basemap = basemap
         self.gdf = gdf
         self.plot_gdf = False
+        self.name = name
 
     def display_map(self):
         defaultLayout=Layout(width='960px', height='940px')
@@ -201,7 +279,7 @@ class SideCarMap():
 
                 print(f'{time.time() - st:0.2f} sec')
 
-        sc = Sidecar(title='NHD+ River Reaches')
+        sc = Sidecar(title=self.name)
         with sc:
             display(self.map)
         
@@ -223,8 +301,10 @@ class SideCarMap():
 
             try:
                 # remove the previously selected layers
-                while len(self.map.layers) > 3:
-                    self.map.remove(self.map.layers[-1]);
+                if self.selected_layer is not None:
+                    self.map.remove(self.selected_layer)
+                # while len(self.map.layers) > 3:
+                #     self.map.remove(self.map.layers[-1]);
                 
                 # query the FIM reach that intersects with the point
                 print('intersecting...')
@@ -238,6 +318,7 @@ class SideCarMap():
                     wkt_string=self.selected().geometry.wkt,
                     style={'color': 'green', 'opacity':1, 'weight':2.,})
                 self.map.add(wlayer)
+                self.selected_layer = self.map.layers[-1]
                 
             except Exception: 
                 print('Could not find reach for selected area')

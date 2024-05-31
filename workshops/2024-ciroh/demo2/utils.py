@@ -227,7 +227,6 @@ def plot_precip_and_flow(cat_sel, nex_sel, xr_cat, xr_nex, xr_forcing):
     # Display the plot
     plt.show()
 
-
 def plot_flow_comparison(cat_sel, nex_sel, 
                          base_forcing_xr, base_nex_xr, base_cat_xr, 
                          mod_nex_xr, mod_cat_xr):
