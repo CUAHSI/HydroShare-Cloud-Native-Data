@@ -226,3 +226,60 @@ def plot_precip_and_flow(cat_sel, nex_sel, xr_cat, xr_nex, xr_forcing):
     
     # Display the plot
     plt.show()
+
+
+def plot_flow_comparison(cat_sel, nex_sel, 
+                         base_forcing_xr, base_nex_xr, base_cat_xr, 
+                         mod_nex_xr, mod_cat_xr):
+
+    # Create a figure and primary axis
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # Get the time and streamflow values
+    times = base_nex_xr.sel(id=nex_sel).time.values
+    base_streamflow_data = base_nex_xr.sel(id=nex_sel).streamflow.values
+    
+    # Plot the streamflow data from base simulation on the primary y-axis
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('Discharge (m³/s)', color='black')
+    ax1.plot(times, base_streamflow_data, color='black', linewidth=3, label='Discharge: Base Scenario')
+    ax1.tick_params(axis='y', labelcolor='black')
+
+    # Add the streamflow plot for the test simulation (modify parameters)
+    mod_streamflow_data = mod_nex_xr.sel(id=nex_sel).streamflow.values
+    ax1.plot(times, mod_streamflow_data, color='gray', linestyle='--', label='Discharge: Test Scenario')
+    
+    # Create a secondary y-axis
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Precipitation (mm) per time step (hr)', color='blue')
+    
+    # Set the frame color to gray
+    for spine in ax1.spines.values():
+        spine.set_edgecolor('gray')
+        spine.set_linewidth(2)
+    
+    for spine in ax2.spines.values():
+        spine.set_edgecolor('gray')
+        spine.set_linewidth(2)
+    
+    # Get the APCP_surface values
+    apcp_surface = base_forcing_xr.sel(ID=cat_sel).APCP_surface.values
+
+    # Plot the APCP_surface data as bars on the secondary y-axis
+    ax2.bar(times, apcp_surface, width=0.01, color='blue', align='center', label='Precipitation')
+    ax2.tick_params(axis='y', labelcolor='blue')
+    
+    # Invert the secondary y-axis
+    ax2.invert_yaxis()
+    
+    # Add legend with transparent face color and located at the top right
+    legend = fig.legend(loc='upper right', bbox_to_anchor=(0.9, 0.9))
+    legend.get_frame().set_facecolor((1, 1, 1, 0.5))  # Set face color with transparency (white with alpha 0.5)
+    
+    # Adjust the layout
+    ax1.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5)
+    # ax2.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    
+    # Display the plot
+    plt.show()
