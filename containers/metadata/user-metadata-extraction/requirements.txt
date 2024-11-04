@@ -1,0 +1,9 @@
+hsclient==1.0.1
+hsmodels==1.0.4
+ipykernel==6.29.5
+ipython==8.27.0
+json5==0.9.25
+jupyter==1.1.1
+jupyterlab==4.2.5
+pydantic==1.10.18
+pydantic_core==2.18.4
