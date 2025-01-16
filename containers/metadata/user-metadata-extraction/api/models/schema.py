@@ -2,9 +2,10 @@ import re
 import json
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Literal
 
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, validator, root_validator
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, validator, model_validator, GetJsonSchemaHandler
+from pydantic.json_schema import JsonSchemaValue
 
 orcid_pattern = "\\b\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]\\b"
 orcid_pattern_placeholder = "e.g. '0000-0001-2345-6789'"
@@ -14,7 +15,7 @@ orcid_pattern_error = "must match the ORCID pattern. e.g. '0000-0001-2345-6789'"
 class SchemaBaseModel(BaseModel):
     class Config:
         @staticmethod
-        def schema_extra(schema: dict[str, Any], model) -> None:
+        def json_schema_extra(schema: dict[str, Any], model) -> None:
             # json schema modification for jsonforms
             for prop in schema.get('properties', {}).values():
                 if 'format' in prop and prop['format'] == 'uri':
@@ -37,10 +38,8 @@ class CreativeWork(SchemaBaseModel):
 
 
 class Person(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["Person"] = Field(
         alias="@type", 
-        default="Person",
-        const=True,
         description="A person."
     )
     name: str = Field(
@@ -49,13 +48,14 @@ class Person(SchemaBaseModel):
     email: Optional[EmailStr] = Field(description="A string containing an email address for the person.")
     identifier: Optional[List[str]] = Field(
         description="Unique identifiers for the person. Where identifiers can be encoded as URLs, enter URLs here.")
+    model_config = {
+        "populate_by_name": True,  # Ensures aliases work during model initialization
+    }
 
 
 class Organization(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["Organization"] = Field(
         alias="@type",
-        default="Organization",
-        const=True
     )
     name: str = Field(description="Name of the provider organization or repository.")
     url: Optional[HttpUrl] = Field(title="URL",
@@ -64,6 +64,9 @@ class Organization(SchemaBaseModel):
     address: Optional[str] = Field(
         description="Full address for the organization - e.g., “8200 Old Main Hill, Logan, UT 84322-8200”."
     )  # Should address be a string or another constrained type?
+    model_config = {
+        "populate_by_name": True,  # Ensures aliases work during model initialization
+    }
 
 
 class Affiliation(Organization):
@@ -92,9 +95,11 @@ class Creator(Person):
 
 class FunderOrganization(Organization):
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        schema = json.loads(FunderOrganization.schema_json())
-        field_schema.update(schema, title="Funding Organization")
+    def __get_pydantic_json_schema__(
+        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        schema.update(schema, title="Funding Organization")
+        return schema
 
     name: str = Field(description="Name of the organization.")
 
@@ -192,8 +197,11 @@ class License(CreativeWork):
 
 class LanguageEnum(str, Enum):
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type='string', title='Language', description='')
+    def __get_pydantic_json_schema__(
+        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        schema.update(type='string', title='Language', description='')
+        return schema
 
     eng = 'eng'
     esp = 'esp'
@@ -201,14 +209,20 @@ class LanguageEnum(str, Enum):
 
 class InLanguageStr(str):
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type='string', title='Other', description="Please specify another language.")
+    def __get_pydantic_json_schema__(
+        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        schema.update(type='string', title='Other', description="Please specify another language.")
+        return schema
 
 
 class IdentifierStr(str):
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type='string', title='Identifier')
+    def __get_pydantic_json_schema__(
+        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        schema.update(type='string', title='Identifier')
+        return schema
 
 
 class Grant(SchemaBaseModel):
@@ -315,10 +329,8 @@ class GeoShape(SchemaBaseModel):
 
 
 class PropertyValueBase(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["Property"] = Field(
         alias="@type",
-        default="PropertyValue",
-        const="PropertyValue",
         description="A property-value pair.",
     )
     propertyID: Optional[str] = Field(
@@ -339,19 +351,17 @@ class PropertyValueBase(SchemaBaseModel):
     measurementTechnique: Optional[str] = Field(
         title="Measurement technique", description="A technique or technology used in a measurement."
     )
+    model_config = {
+        "populate_by_name": True,  # Ensures aliases work during model initialization
+        "title": "PropertyValue"
+    }
 
-    class Config:
-        title = "PropertyValue"
-
-    @root_validator
-    def validate_min_max_values(cls, values):
-        min_value = values.get("minValue", None)
-        max_value = values.get("maxValue", None)
-        if min_value is not None and max_value is not None:
-            if min_value > max_value:
-                raise ValueError("Minimum value must be less than or equal to maximum value")
-
-        return values
+    @model_validator(mode="after")
+    def validate_min_max_values(self) -> "ExampleModel":
+        if self.minValue is not None and self.maxValue is not None:
+            if self.minValue > self.maxValue:
+                raise ValueError("Minimum value must be less than or equal to maximum value.")
+        return self
 
 
 class PropertyValue(PropertyValueBase):
@@ -375,13 +385,11 @@ class Place(SchemaBaseModel):
         description="Additional properties of the place."
     )
 
-    @root_validator
-    def validate_geo_or_name_required(cls, values):
-        name = values.get('name', None)
-        geo = values.get('geo', None)
-        if not name and not geo:
+    @model_validator(mode="after")
+    def validate_geo_or_name_required(self):
+        if not self.name and not self.geo:
             raise ValueError('Either place name or geo location of the place must be provided')
-        return values
+        return self
 
 
 class MediaObject(SchemaBaseModel):
@@ -542,6 +550,13 @@ class CoreMetadata(SchemaBaseModel):
         description="A media object that encodes this CreativeWork. This property is a synonym for encoding.",
     )
     citation: Optional[List[str]] = Field(title="Citation", description="A bibliographic citation for the resource.")
+
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "json_encoders": {
+            HttpUrl: str,  # Convert HttpUrl to a string during serialization
+        }
+    }
 
 
 class DatasetMetadata(CoreMetadata):

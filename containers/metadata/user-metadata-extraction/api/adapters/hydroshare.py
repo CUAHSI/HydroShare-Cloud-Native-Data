@@ -12,11 +12,11 @@ from api.models.user import Submission
 
 
 class Creator(BaseModel):
-    name: Optional[str]
-    email: Optional[EmailStr]
-    organization: Optional[str]
-    homepage: Optional[HttpUrl]
-    address: Optional[str]
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    organization: Optional[str] = None
+    homepage: Optional[HttpUrl] = None
+    address: Optional[str] = None
     identifiers: Optional[dict] = {}
 
     def to_dataset_creator(self):
@@ -45,9 +45,9 @@ class Creator(BaseModel):
 
 class Award(BaseModel):
     funding_agency_name: str
-    title: Optional[str]
-    number: Optional[str]
-    funding_agency_url: Optional[HttpUrl]
+    title: Optional[str] = None
+    number: Optional[str] = None
+    funding_agency_url: Optional[HttpUrl] = None
 
     def to_dataset_grant(self):
         grant = schema.Grant.construct()
@@ -81,7 +81,7 @@ class TemporalCoverage(BaseModel):
 
 
 class SpatialCoverageBox(BaseModel):
-    name: Optional[str]
+    name: Optional[str] = None
     northlimit: float
     eastlimit: float
     southlimit: float
@@ -98,7 +98,7 @@ class SpatialCoverageBox(BaseModel):
 
 
 class SpatialCoveragePoint(BaseModel):
-    name: Optional[str]
+    name: Optional[str] = None
     north: float
     east: float
 
@@ -164,8 +164,8 @@ class Rights(BaseModel):
 
 class _HydroshareRequestHandler(AbstractRepositoryRequestHandler):
     def get_metadata(self, record_id: str):
-        hs_meta_url = self.settings.hydroshare_meta_read_url % record_id
-        hs_file_url = self.settings.hydroshare_file_read_url % record_id
+        hs_meta_url = str(self.settings.hydroshare_meta_read_url) % record_id
+        hs_file_url = str(self.settings.hydroshare_file_read_url) % record_id
 
         def make_request(url, file_list=False) -> Union[dict, List[dict]]:
             response = requests.get(url)
@@ -224,16 +224,20 @@ class _HydroshareResourceMetadata(BaseModel):
     creators: List[Creator]
     created: datetime
     modified: datetime
-    published: Optional[datetime]
-    subjects: Optional[List[str]]
+    published: Optional[datetime] = None
+    subjects: Optional[List[str]] = None
     language: str
     rights: Rights
-    awards: Optional[List[Award]]
-    spatial_coverage: Optional[Union[SpatialCoverageBox, SpatialCoveragePoint]]
-    period_coverage: Optional[TemporalCoverage]
-    relations: Optional[List[Relation]]
+    awards: Optional[List[Award]] = None
+    spatial_coverage: Optional[Union[SpatialCoverageBox, SpatialCoveragePoint]] = None
+    period_coverage: Optional[TemporalCoverage] = None
+    relations: Optional[List[Relation]] = None
     citation: str
-    content_files: Optional[List[ContentFile]]
+    content_files: Optional[List[ContentFile]] = None
+
+    model_config = {
+        "extra": "allow",  # Ignore additional fields
+    }
 
     def to_dataset_creators(self):
         creators = []

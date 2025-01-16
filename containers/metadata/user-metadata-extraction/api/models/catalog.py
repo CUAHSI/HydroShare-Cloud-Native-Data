@@ -6,6 +6,8 @@ from beanie import Document
 from api.models.user import Submission, S3Path
 from .schema import CoreMetadata, DatasetMetadata
 
+from pydantic import HttpUrl
+
 
 class CoreMetadataDOC(Document, CoreMetadata):
     # this field is not stored in the database, but is populated from the corresponding submission record
@@ -39,3 +41,9 @@ class CoreMetadataDOC(Document, CoreMetadata):
 class DatasetMetadataDOC(CoreMetadataDOC, DatasetMetadata):
     repository_identifier: str = None
     s3_path: Optional[S3Path] = None
+
+    model_config = {
+        "json_encoders": {
+            HttpUrl: str,  # Convert HttpUrl to a string during serialization
+        }
+    }
