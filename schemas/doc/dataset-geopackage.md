@@ -75,7 +75,7 @@ The following **required** and **optional** properties, based on Schema.Org voca
 #### Vectors
 For a **vector** component, we intend to use the `additionalProperty` property to denote both the count of features and fields within a shapefile. "Features" within a shapefile denote individual geographic objects, such as point, line, or polygon, and encompass both spatial geometry and associated attribute data. In the context of shapefile, the term "fields" refer to the columns present in the attribute table. The attribute table is a tabular structure where each row corresponds to a feature in the shapefile, and each column (or field) represents a different attribute or type of information associated with those features. To embody the feature and field counts, we use the `propertyID` and `value` attributes within the `additionalProperty` class. 
 
-|PropertyID|Property Category|Expected Value Type|Cardinality|Description|
+|PropertyID|PropertyID Category|Expected Value Type|Cardinality|Description|
 |---|---|---|---|---|
 |Feature Count|Fixed|int|1|Individual geographic objects (such as point, line, or polygon) that encompass both spatial geometry and associated attribute data.|
 |Field Count|Fixed|int|1|Columns present in the attribute table of the shapefile.|
@@ -102,7 +102,7 @@ A simple example of a GeoPackage's shapefile layer with 7 features (polygons) an
 #### Rasters
 For a **raster** component, we intend to use the `additionalProperty` property to denote the *Cell Information* including the number of rows and columns, the spatial resolution of a grid cell, and the data type associated with the grid cells. Note that the `propertyID` for rasters consists of fixed terms that we have assigned to these pairs, ensuring consistency, while the value property remains user-defined and serves as the input provided by users.
 
-|PropertyID|Property Category|Expected Value Type|Cardinality|Description|
+|PropertyID|PropertyID Category|Expected Value Type|Cardinality|Description|
 |---|---|---|---|---|
 |Rows |Fixed|int|1|The number of rows (height) in the raster grid.|
 |Columns |Fixed|int|1|The number of columns (width) in the raster grid.|
@@ -152,7 +152,7 @@ For a **table** component, we intend to use the `additionalProperty` property to
 * Raster Metadata Tables – Describe raster layers stored within the GeoPackage.
 * Statistical Summary Tables – Typically derived from raster data, providing aggregated statistics for measured variables.
 
-|PropertyID|Property Category|Expected Value Type|Cardinality|Description|
+|PropertyID|PropertyID Category|Expected Value Type|Cardinality|Description|
 |---|---|---|
 |Row Count |Fixed|int|1|The number of rows in the table.|
 |Column Count |Fixed|int|1|The number of columns in the table.|
@@ -382,7 +382,7 @@ Please note that any property from our [core metadata](core.md) can potentially 
 
 ### A Complete Example for a GeoPackage
 
-Here is a complete example of a GeoPackage that integrates all the information discussed above. **One key distinction is the absence of `associatedMedia` for GeoPackage layers represented by the `hasPast` class, which would typically be present if each layer were a separately downloadable file.** Comparing the properties under hasPart in the following example with those in the complete examples for Shapefile or GeoTIFF files highlights this difference.
+Here is a complete example of a GeoPackage that integrates all the information discussed above. **One key distinction is the absence of `associatedMedia` for GeoPackage layers represented by the `hasPart` class, which would typically be present if each layer were a separately downloadable file.** Comparing the properties under hasPart in the following example with those in the complete examples for Shapefile or GeoTIFF files highlights this difference.
 
 ``` json
 {
