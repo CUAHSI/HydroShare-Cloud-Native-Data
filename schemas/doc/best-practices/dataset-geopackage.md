@@ -3,17 +3,11 @@
 A [GeoPackage](https://www.geopackage.org/) is an open, standards-based format for storing and transfering geospatial information. A GeoPackage is an aggregation of various data types, including vectors, rasters, and tabular data (typically non-geometric). Therefore, it can be represented using the `hasPart` property from the Schema.org vocabulary, which is used to define relationships between components. At the core level of the schema, the `hasPart` property refers to one or more JSON files containing metadata about the content. This includes a metadata JSON file describing the entire resource, as well as additional metadata JSON files for individual files (see below).
 
 ### *HasPart from the core metadata represented at the **core level***
-The `HasPart` property, as described in the core metadata, can encompass a collection of things that represent the work. In the case of a geopackage file type, the configuration of the `HasPart` property is outlined below. The first item refers to the metadata file describing the work and the second item refers to the metadata file describing the Geopackage content.
+The `HasPart` property, as described in the core metadata, can encompass a collection of things that represent the work. In the case of a geopackage file type, the configuration of the `HasPart` property is outlined below. 
 
 ``` json
 {
   "hasPart": [
-    {
-        "@type": "CreativeWork",
-        "name": "resource.json",
-        "description": "The metadata json file for the shapefile.",
-        "url": "https://www.hydroshare.org/.../resource.json"
-    },
     {
         "@type": "CreativeWork",
         "name": "nextgen_18.gpkg.json",
@@ -32,12 +26,6 @@ The `hasPart` property at this second level includes
 ``` json
 {
   "hasPart": [
-    {
-        "@type": "CreativeWork",
-        "name": "nextgen_18.gpkg.json",
-        "description": "The metadata json file for the shapefile.",
-        "url": "https://www.hydroshare.org/.../nextgen_18.gpkg.json"
-    },
     {
         "@type": "Dataset",
         "name": "vector_layer_name",
@@ -398,12 +386,6 @@ Here is a complete example of a GeoPackage that integrates all the information d
         "contentSize": "176.2 MB"
     },
     "hasPart": [
-        {
-            "@type": "CreativeWork",
-            "name": "nextgen_18.gpkg.json",
-            "description": "The metadata json file for the shapefile.",
-            "url": "https://www.hydroshare.org/.../nextgen_18.gpkg.json"
-        },
         {
             "@type": "Dataset",
             "name": "vector_layer_name",
