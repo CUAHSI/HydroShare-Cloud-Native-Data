@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -f Dockerfile -t cuahsi/nwm-subset:v1.2.4 .
+docker build -f Dockerfile -t us-central1-docker.pkg.dev/apps-320517/subsetter/nwm:1.9 .
