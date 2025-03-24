@@ -12,7 +12,9 @@ from pydantic import (
     field_validator,
     model_validator,
     GetJsonSchemaHandler,
+    FieldValidationInfo,
 )
+
 from pydantic.json_schema import JsonSchemaValue
 
 orcid_pattern = "\\b\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]\\b"
@@ -35,21 +37,6 @@ def modify_json_schema(schema: dict[str, Any]) -> None:
 
 class SchemaBaseModel(BaseModel):
     model_config = ConfigDict(json_schema_extra=modify_json_schema)
-
-
-#    class Config:
-#        @staticmethod
-#        def json_schema_extra(schema: dict[str, Any], model) -> None:
-#            # json schema modification for jsonforms
-#            for prop in schema.get("properties", {}).values():
-#                if "format" in prop and prop["format"] == "uri":
-#                    # using a regex for url matching
-#                    prop.pop("format")
-#                    prop["pattern"] = (
-#                        "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$"
-#                    )
-#                    prop["errorMessage"] = {"pattern": 'must match format "url"'}
-#
 
 
 class CreativeWork(SchemaBaseModel):
@@ -282,8 +269,34 @@ class IdentifierStr(str):
     def __get_pydantic_json_schema__(
         cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-        schema.update(type="string", title="Identifier")
+        schema.update(
+            {"type": "array", "items": {"type": "string", "title": "Identifier"}}
+        )
         return schema
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(
+        cls, value: Union[str, List[str]], info: FieldValidationInfo
+    ) -> "IdentifierStr":
+        if isinstance(value, str):
+            value = [value]  # Convert single string to list
+        if not isinstance(value, list) or not all(
+            isinstance(item, str) for item in value
+        ):
+            raise TypeError("Identifier must be a string or a list of strings")
+        return cls(", ".join(value))  # Join the list into a single string for storage
+
+
+#    @classmethod
+#    def __get_pydantic_json_schema__(
+#        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+#    ) -> JsonSchemaValue:
+#        schema.update(type="string", title="Identifier")
+#        return schema
 
 
 class Grant(SchemaBaseModel):
@@ -574,12 +587,13 @@ class CoreMetadata(SchemaBaseModel):
         "of the resource can be accessed. If there is no landing page,"
         " provide the URL of the content.",
     )
-    identifier: Optional[List[IdentifierStr]] = Field(
+    identifier: IdentifierStr = Field(
         title="Identifiers",
         description="Any kind of identifier for the resource. Identifiers may be DOIs or unique strings "
         "assigned by a repository. Multiple identifiers can be entered. Where identifiers can be "
         "encoded as URLs, enter URLs here.",
     )
+
     creator: List[Union[Creator, Organization]] = Field(
         description="Person or Organization that created the resource."
     )
