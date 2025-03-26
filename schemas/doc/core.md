@@ -11,7 +11,7 @@ for **required** and `0,1` or `0+` for **optional** in the Cardinality column of
 |[name](#name-description-and-url)|Thing|Text|1|The name or title of the record|
 |[description](#name-description-and-url)|Thing|Text|1|The description or abstract of the record|
 |[url](#name-description-and-url)|Thing|URL|1|The url of the metadata schema of a record (e.g., metadata.json)|
-|[identifier](#identifier)|Thing| Text \| URL|1+|Any kind of identifier for the record (e.g., the url of a landing page describing the record)|
+|[identifier](#identifier)|Thing| Text \| URL|1+|Any kind of identifier for a thing|
 |[creator](#creator)|CreativeWork|Organization \| Person|1+|Organization or person that created the record|
 |[dateCreated](#dates) | CreativeWork | DateTime | 1 | The date on which the record was created|
 |[keywords](#keywords) | CreativeWork | DefinedTerm \| Text \| URL |	1+ | Keywords or tags used to describe the record|
@@ -54,7 +54,7 @@ A simple example is shown below:
 
 ### Identifier
 
-[Schema:identifier](https://schema.org/identifier) is a property of the `Thing` class. It is used to encode the record's identifier(s). For permanently published records, `identifier` will likely be a digital object identifier (DOI). For unpublished records, this may be an identifier assigned by the system in which the record's content resides. This element can be repeated if a record has multiple identifiers.
+[Schema:identifier](https://schema.org/identifier) is a property of the `Thing` class and is used to encode one or more identifiers for the thing. A Thing can represent a record, a person, or other entities. For permanently published records, `identifier` will likely be a digital object identifier (DOI). For unpublished records, this may be an identifier assigned by the system in which the record's content resides. This element can be repeated if a record has multiple identifiers.
 
 An identifier as text can be encoded as:
 
@@ -87,6 +87,15 @@ However, it is preferred for an identifier to be expressed as a URL if possible.
 }
 ```
 Please note that the example above describes the use of the `PropertyValue` type to represent the `identifier`. It is important to mention that our current schema does not currently include the `identifier` as a `PropertyValue` type. However, we may consider incorporating it in future updates of our schema.
+
+For a thing with multiple identifiers,such as a person with more than one identifier, the `identifier` field will likely appear as follows.
+
+``` json
+{
+  "identifier": ["https://orcid.org/0000-0003-2929-3946", 
+                 "https://scholar.google.com/citations?user=dKqI7iAAAAAJ&hl=en"]
+}
+```
 
 ### Creator 
 
