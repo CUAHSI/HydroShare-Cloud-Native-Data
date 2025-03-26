@@ -10,8 +10,8 @@ for **required** and `0,1` or `0+` for **optional** in the Cardinality column of
 |---|---|---|---|---|
 |[name](#name-description-and-url)|Thing|Text|1|The name or title of the record|
 |[description](#name-description-and-url)|Thing|Text|1|The description or abstract of the record|
-|[url](#name-description-and-url)|Thing|URL|1|The url of a landing page describing the record|
-|[identifier](#identifier)|Thing| Text \| URL|1+|Any kind of identifier for the record|
+|[url](#name-description-and-url)|Thing|URL|1|The url of the metadata schema of a record (e.g., metadata.json)|
+|[identifier](#identifier)|Thing| Text \| URL|1+|Any kind of identifier for the record (e.g., the url of a landing page describing the record)|
 |[creator](#creator)|CreativeWork|Organization \| Person|1+|Organization or person that created the record|
 |[dateCreated](#dates) | CreativeWork | DateTime | 1 | The date on which the record was created|
 |[keywords](#keywords) | CreativeWork | DefinedTerm \| Text \| URL |	1+ | Keywords or tags used to describe the record|
@@ -555,8 +555,7 @@ A geographic bounding box is an area enclosed by a rectangle formed by two point
 ### Associated Media
 
 [Schema:associatedMedia](https://schema.org/associatedMedia), which is also a synonym for 
-[Schema:encoding](https://schema.org/encoding), is a property of `CreativeWork` for describing media objects 
-that encode the work. Specific types of media objects that we selected for the I-GUIDE 
+[Schema:encoding](https://schema.org/encoding), is a property of `CreativeWork` for describing media objects that encode the work. Specific types of media objects that we selected for the I-GUIDE 
 data catalog are [Schema:DataDownload](https://schema.org/DataDownload), [Schema:ImageObject](https://schema.org/ImageObject), and [Schema:VideoObject](https://schema.org/VideoObject). Note that a media object 
 could have several properties from `CreativeWork`, but most importantly, it requires 
 [Schema:contentUrl](https://schema.org/contentUrl) and [Schema:encodingFormat](https://schema.org/encodingFormat). 
