@@ -11,7 +11,7 @@ for **required** and `0,1` or `0+` for **optional** in the Cardinality column of
 |[name](#name-description-and-url)|Thing|Text|1|The name or title of the record|
 |[description](#name-description-and-url)|Thing|Text|1|The description or abstract of the record|
 |[url](#name-description-and-url)|Thing|URL|1|The url of the metadata schema of a record (e.g., metadata.json)|
-|[identifier](#identifier)|Thing| Text \| URL|1+|Any kind of primary identifier for the record (e.g., the url to the landing page of a HydroShare resource)|
+|[identifier](#identifier)|Thing| Text \| URL|1|Any kind of primary identifier for the record (e.g., the url to the landing page of a HydroShare resource)|
 |[creator](#creator)|CreativeWork|Organization \| Person|1+|Organization or person that created the record|
 |[dateCreated](#dates) | CreativeWork | DateTime | 1 | The date on which the record was created|
 |[keywords](#keywords) | CreativeWork | DefinedTerm \| Text \| URL |	1+ | Keywords or tags used to describe the record|
