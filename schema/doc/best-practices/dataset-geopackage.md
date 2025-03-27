@@ -141,7 +141,7 @@ For a **table** component, we intend to use the `additionalProperty` property to
 * Statistical Summary Tables – Typically derived from raster data, providing aggregated statistics for measured variables.
 
 |PropertyID|PropertyID Category|Expected Value Type|Cardinality|Description|
-|---|---|---|
+|---|---|---|---|---|
 |Row Count |Fixed|int|1|The number of rows in the table.|
 |Column Count |Fixed|int|1|The number of columns in the table.|
 
