@@ -5,7 +5,8 @@ import json
 
 import pytest_asyncio
 
-from ..schema import CoreMetadata, DatasetMetadata
+from core import CoreMetadata
+from dataset import DatasetMetadata
 
 
 @pytest_asyncio.fixture(scope="function")
