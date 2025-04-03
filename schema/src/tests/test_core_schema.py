@@ -620,15 +620,6 @@ async def test_core_schema_spatial_coverage_optional(
                     "name": "Geographic Coordinate System",
                     "value": "WGS 84 EPSG:4326",
                 },
-                {
-                    "@type": "PropertyValue",
-                    "name": "Geographic Coordinate System",
-                    "value": {
-                        "@type": "PropertyValue",
-                        "name": "Coordinate System",
-                        "value": "WGS 84 EPSG:4326",
-                    },
-                },
             ],
         },
         {
@@ -642,18 +633,12 @@ async def test_core_schema_spatial_coverage_optional(
                 {
                     "@type": "PropertyValue",
                     "name": "Projected Coordinate System",
-                    "value": [
-                        {
-                            "@type": "PropertyValue",
-                            "name": "Coordinate Reference System",
-                            "value": "WGS_1984_UTM_Zone_12N",
-                        },
-                        {
-                            "@type": "PropertyValue",
-                            "name": "Datum",
-                            "value": "WGS_1984",
-                        },
-                    ],
+                    "value": "WGS_1984_UTM_Zone_12N",
+                },
+                {
+                    "@type": "PropertyValue",
+                    "name": "Datum",
+                    "value": "WGS_1984",
                 },
             ],
         },
@@ -695,51 +680,42 @@ async def test_core_schema_spatial_coverage_value_type(
         if len(core_model_instance.spatialCoverage.additionalProperty) == 1:
             assert (
                 core_model_instance.spatialCoverage.additionalProperty[0].name
-                == "Projected Coordinate System"
+                == "Geographic Coordinate System"
             )
             assert (
                 core_model_instance.spatialCoverage.additionalProperty[0].type
                 == "PropertyValue"
             )
-            # test that the value of the first item is a PropertyValue object
-            assert (
-                len(core_model_instance.spatialCoverage.additionalProperty[0].value)
-                == 2
-            )
-
-            property_value_obj = core_model_instance.spatialCoverage.additionalProperty[
-                0
-            ].value[0]
-            assert property_value_obj.type == "PropertyValue"
-            assert property_value_obj.name == "Coordinate Reference System"
-            assert property_value_obj.value == "WGS_1984_UTM_Zone_12N"
-            property_value_obj = core_model_instance.spatialCoverage.additionalProperty[
-                0
-            ].value[1]
-            assert property_value_obj.type == "PropertyValue"
-            assert property_value_obj.name == "Datum"
-            assert property_value_obj.value == "WGS_1984"
-        else:
-            assert len(core_model_instance.spatialCoverage.additionalProperty) == 2
-            assert (
-                core_model_instance.spatialCoverage.additionalProperty[0].name
-                == "Geographic Coordinate System"
-            )
             assert (
                 core_model_instance.spatialCoverage.additionalProperty[0].value
                 == "WGS 84 EPSG:4326"
             )
+        else:
+            assert len(core_model_instance.spatialCoverage.additionalProperty) == 2
+            assert (
+                core_model_instance.spatialCoverage.additionalProperty[0].type
+                == "PropertyValue"
+            )
+            assert (
+                core_model_instance.spatialCoverage.additionalProperty[0].name
+                == "Projected Coordinate System"
+            )
+            assert (
+                core_model_instance.spatialCoverage.additionalProperty[0].value
+                == "WGS_1984_UTM_Zone_12N"
+            )
+            assert (
+                core_model_instance.spatialCoverage.additionalProperty[1].type
+                == "PropertyValue"
+            )
             assert (
                 core_model_instance.spatialCoverage.additionalProperty[1].name
-                == "Geographic Coordinate System"
+                == "Datum"
             )
-            # test that the value of the 2nd item is a PropertyValue object
-            property_value_obj = core_model_instance.spatialCoverage.additionalProperty[
-                1
-            ].value
-            assert property_value_obj.type == "PropertyValue"
-            assert property_value_obj.name == "Coordinate System"
-            assert property_value_obj.value == "WGS 84 EPSG:4326"
+            assert (
+                core_model_instance.spatialCoverage.additionalProperty[1].value
+                == "WGS_1984"
+            )
     else:
         assert core_model_instance.spatialCoverage.additionalProperty == []
 

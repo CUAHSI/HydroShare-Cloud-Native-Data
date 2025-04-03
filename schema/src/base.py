@@ -438,18 +438,74 @@ class GeoShape(SchemaBaseModel):
         return v
 
 
-class PropertyValueBase(SchemaBaseModel):
-    type: Literal["Property"] = Field(
+# class PropertyValueBase(SchemaBaseModel):
+#    type: Literal["Property"] = Field(
+#        alias="@type",  # type: ignore
+#        description="A property-value pair.",
+#    )
+#    propertyID: Optional[str] = Field(
+#        title="Property ID", description="The ID of the property.", default=None
+#    )
+#    name: str = Field(description="The name of the property.")
+#
+#    # TC: should this be: value: Union[str, "PropertyValueBase"] = Field(...
+#    value: str = Field(description="The value of the property.")
+#    unitCode: Optional[str] = Field(
+#        title="Measurement unit",
+#        description="The unit of measurement for the value.",
+#        default=None,
+#    )
+#    description: Optional[str] = Field(
+#        description="A description of the property.", default=None
+#    )
+#    minValue: Optional[float] = Field(
+#        title="Minimum value",
+#        description="The minimum allowed value for the property.",
+#        default=None,
+#    )
+#    maxValue: Optional[float] = Field(
+#        title="Maximum value",
+#        description="The maximum allowed value for the property.",
+#        default=None,
+#    )
+#    measurementTechnique: Optional[str] = Field(
+#        title="Measurement technique",
+#        description="A technique or technology used in a measurement.",
+#        default=None,
+#    )
+#    model_config = {
+#        "populate_by_name": True,  # Ensures aliases work during model initialization
+#        "title": "PropertyValue",
+#    }
+#
+#
+#    @model_validator(mode="after")
+#    def validate_min_max_values(self) -> "ExampleModel":
+#        if self.minValue is not None and self.maxValue is not None:
+#            if self.minValue > self.maxValue:
+#                raise ValueError(
+#                    "Minimum value must be less than or equal to maximum value."
+#                )
+#        return self
+
+
+class PropertyValue(SchemaBaseModel):
+    type: str = Field(
         alias="@type",  # type: ignore
+        default="PropertyValue",
         description="A property-value pair.",
-    )
-    propertyID: Optional[str] = Field(
-        title="Property ID", description="The ID of the property.", default=None
     )
     name: str = Field(description="The name of the property.")
 
-    # TC: should this be: value: Union[str, "PropertyValueBase"] = Field(...
-    value: str = Field(description="The value of the property.")
+    value: Union[str, float, bool] = (
+        Field(  # this also could be a StructuredValue for more complex cases (if we want)
+            description="The value of the property."
+        )
+    )
+
+    propertyID: Optional[str] = Field(
+        title="Property ID", description="The ID of the property.", default=None
+    )
     unitCode: Optional[str] = Field(
         title="Measurement unit",
         description="The unit of measurement for the value.",
@@ -479,25 +535,6 @@ class PropertyValueBase(SchemaBaseModel):
     }
 
 
-#    @model_validator(mode="after")
-#    def validate_min_max_values(self) -> "ExampleModel":
-#        if self.minValue is not None and self.maxValue is not None:
-#            if self.minValue > self.maxValue:
-#                raise ValueError(
-#                    "Minimum value must be less than or equal to maximum value."
-#                )
-#        return self
-
-
-class PropertyValue(PropertyValueBase):
-    # using PropertyValueBase model instead of PropertyValue model as one of the types for the value field
-    # in order for the schema generation (schema.json) to work. Self referencing nested models leads to
-    # infinite loop in our custom schema generation code when trying to replace dict with key '$ref'
-    value: Union[str, PropertyValueBase, List[PropertyValueBase]] = Field(
-        description="The value of the property."
-    )
-
-
 class Place(SchemaBaseModel):
     type: str = Field(
         alias="@type",  # type: ignore
@@ -513,7 +550,7 @@ class Place(SchemaBaseModel):
 
     additionalProperty: Optional[List[PropertyValue]] = Field(
         title="Additional properties",
-        default=[],
+        default=[],  # TODO: this should probably be default=None since the field is optional.
         description="Additional properties of the place.",
     )
 
