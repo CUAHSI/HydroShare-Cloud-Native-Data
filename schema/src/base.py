@@ -42,18 +42,26 @@ class SchemaBaseModel(BaseModel):
 
 
 class CreativeWork(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["CreativeWork"] = Field(
         alias="@type",  # type: ignore
         default="CreativeWork",
         description="Submission type can include various forms of content, such as datasets, "
         "software source code, digital documents, etc.",
     )
     name: str = Field(description="Submission's name or title", title="Name or title")
+    description: Optional[str] = Field(
+        description="The description of the creative work.", default=None
+    )
+    url: Optional[HttpUrl] = Field(
+        title="URL",
+        description="A URL to the creative work.",
+        default=None,
+    )
 
 
 class Person(SchemaBaseModel):
     type: Literal["Person"] = Field(
-        alias="@type", description="A person."  # type: ignore
+        alias="@type", description="A person.", default="Person"  # type: ignore
     )
     name: str = Field(
         description="A string containing the full name of the person. Personal name format: Family Name, Given Name."
@@ -73,6 +81,7 @@ class Person(SchemaBaseModel):
 class Organization(SchemaBaseModel):
     type: Literal["Organization"] = Field(
         alias="@type",  # type: ignore
+        default="Organization",
     )
     name: str = Field(description="Name of the provider organization or repository.")
     url: Optional[HttpUrl] = Field(
@@ -160,7 +169,7 @@ class SourceOrganization(Organization):
 
 
 class DefinedTerm(SchemaBaseModel):
-    type: str = Field(alias="@type", default="DefinedTerm")  # type: ignore
+    type: Literal["DefinedTerm"] = Field(alias="@type", default="DefinedTerm")  # type: ignore
     name: str = Field(description="The name of the term or item being defined.")
     description: str = Field(description="The description of the item being defined.")
 
@@ -248,21 +257,6 @@ class SubjectOf(CreativeWork):
     )
 
 
-class License(CreativeWork):
-    name: str = Field(
-        description="A text string indicating the name of the license under which the resource is shared."
-    )
-    url: Optional[HttpUrl] = Field(
-        title="URL",
-        description="A URL for a web page that describes the license.",
-        default=None,
-    )
-    description: Optional[str] = Field(
-        description="A text string describing the license or containing the text of the license itself.",
-        default=None,
-    )
-
-
 class LanguageEnum(str, Enum):
     @classmethod
     def __get_pydantic_json_schema__(
@@ -317,9 +311,9 @@ class IdentifierStr(str):
 
 
 class Grant(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["Grant"] = Field(
         alias="@type",  # type: ignore
-        default="MonetaryGrant",
+        default="Grant",
         description="This metadata represents details about a grant or financial assistance provided to an "
         "individual(s) or organization(s) for supporting the work related to the record.",
     )
@@ -370,7 +364,7 @@ class TemporalCoverage(SchemaBaseModel):
 
 
 class GeoCoordinates(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["GeoCoordinates"] = Field(
         alias="@type",  # type: ignore
         default="GeoCoordinates",
         description="Geographic coordinates that represent a specific location on the Earth's surface. "
@@ -399,7 +393,7 @@ class GeoCoordinates(SchemaBaseModel):
 
 
 class GeoShape(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["GeoShape"] = Field(
         alias="@type",  # type: ignore
         default="GeoShape",
         description="A structured representation that describes the coordinates of a geographic feature.",
@@ -438,59 +432,8 @@ class GeoShape(SchemaBaseModel):
         return v
 
 
-# class PropertyValueBase(SchemaBaseModel):
-#    type: Literal["Property"] = Field(
-#        alias="@type",  # type: ignore
-#        description="A property-value pair.",
-#    )
-#    propertyID: Optional[str] = Field(
-#        title="Property ID", description="The ID of the property.", default=None
-#    )
-#    name: str = Field(description="The name of the property.")
-#
-#    # TC: should this be: value: Union[str, "PropertyValueBase"] = Field(...
-#    value: str = Field(description="The value of the property.")
-#    unitCode: Optional[str] = Field(
-#        title="Measurement unit",
-#        description="The unit of measurement for the value.",
-#        default=None,
-#    )
-#    description: Optional[str] = Field(
-#        description="A description of the property.", default=None
-#    )
-#    minValue: Optional[float] = Field(
-#        title="Minimum value",
-#        description="The minimum allowed value for the property.",
-#        default=None,
-#    )
-#    maxValue: Optional[float] = Field(
-#        title="Maximum value",
-#        description="The maximum allowed value for the property.",
-#        default=None,
-#    )
-#    measurementTechnique: Optional[str] = Field(
-#        title="Measurement technique",
-#        description="A technique or technology used in a measurement.",
-#        default=None,
-#    )
-#    model_config = {
-#        "populate_by_name": True,  # Ensures aliases work during model initialization
-#        "title": "PropertyValue",
-#    }
-#
-#
-#    @model_validator(mode="after")
-#    def validate_min_max_values(self) -> "ExampleModel":
-#        if self.minValue is not None and self.maxValue is not None:
-#            if self.minValue > self.maxValue:
-#                raise ValueError(
-#                    "Minimum value must be less than or equal to maximum value."
-#                )
-#        return self
-
-
 class PropertyValue(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["PropertyValue"] = Field(
         alias="@type",  # type: ignore
         default="PropertyValue",
         description="A property-value pair.",
@@ -536,7 +479,7 @@ class PropertyValue(SchemaBaseModel):
 
 
 class Place(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["Place"] = Field(
         alias="@type",  # type: ignore
         default="Place",
         description="Represents the focus area of the record's content.",
@@ -564,7 +507,7 @@ class Place(SchemaBaseModel):
 
 
 class MediaObject(SchemaBaseModel):
-    type: str = Field(
+    type: Literal["MediaObject"] = Field(
         alias="@type",  # type: ignore
         default="MediaObject",
         description="An item that encodes the record.",
@@ -628,5 +571,37 @@ class MediaObject(SchemaBaseModel):
     #     if v:
     #         v = v.strip()
     #         if v and not re.match(r"^[a-fA-F0-9]{64}$", v):
-    #             raise ValueError('invalid SHA-256 format')
-    #     return v
+    #             raise ValueError('invalid SHA-2
+
+
+class DataDownload(MediaObject):
+    type: Literal["DataDownload"] = Field(
+        alias="@type",  # type: ignore
+        default="DataDownload",
+        description="All or part of a Dataset in downloadable form.",
+    )
+    measurementMethod: Optional[Union[DefinedTerm, HttpUrl, str]] = Field(
+        title="Measurement method",
+        description="A subproperty of measurementTechnique that can be used for specifying specific methods, in particular via MeasurementMethodEnum.",
+        default=None,
+    )
+    measurementTechnique: Optional[Union[DefinedTerm, HttpUrl, str]] = Field(
+        title="Measurement technique",
+        description="A technique, method or technology used in an Observation, StatisticalVariable or Dataset (or DataDownload, DataCatalog), corresponding to the method used for measuring the corresponding variable(s) (for datasets, described using variableMeasured; for Observation, a StatisticalVariable). Often but not necessarily each variableMeasured will have an explicit representation as (or mapping to) an property such as those defined in Schema.org, or other RDF vocabularies and 'knowledge graphs'. In that case the subproperty of variableMeasured called measuredProperty is applicable.",
+        default=None,
+    )
+
+
+class VideoObject(MediaObject):
+    type: Literal["VideoObject"] = Field(
+        alias="@type",  # type: ignore
+        default="VideoObject",
+        description="A video file.",
+    )
+    # there are many fields that we could implement here, but I don't think they'll be
+    # used. I'm adding VideoObject because it's referenced in out unit tests. Consider
+    # removing in the future.
+
+
+# combine the media objects together to make referencing easier
+MediaType = Union[MediaObject, DataDownload, VideoObject]

@@ -8,10 +8,10 @@ from pydantic import (
 )
 
 from base import (
+    CreativeWork,
     SchemaBaseModel,
     Creator,
     Organization,
-    License,
     Provider,
     PublisherOrganization,
     SubjectOf,
@@ -26,7 +26,7 @@ from base import (
     Place,
     HasPart,
     IsPartOf,
-    MediaObject,
+    MediaType,
 )
 
 
@@ -39,13 +39,12 @@ class CoreMetadata(SchemaBaseModel):
     )
     type: str = Field(
         alias="@type",  # type: ignore
-        title="Submission type",
-        default="Dataset",
-        description="Submission type can include various forms of content, such as datasets,"
+        default="CreativeWork",
+        description="A creative work that may include various forms of content, such as datasets,"
         " software source code, digital documents, etc.",
-        json_schema_extra={
-            "enum": ["Dataset", "Notebook", "Software Source Code"],
-        },
+        #        json_schema_extra={
+        #            "enum": ["Dataset", "Notebook", "Software Source Code"],
+        #        },
     )
     name: str = Field(
         title="Name or title",
@@ -78,7 +77,7 @@ class CoreMetadata(SchemaBaseModel):
         min_length=1,
         description="Keywords or tags used to describe the dataset, delimited by commas.",
     )
-    license: License = Field(
+    license: Union[CreativeWork, HttpUrl] = Field(
         description="A license document that applies to the resource."
     )
     provider: Union[Organization, Provider] = Field(
@@ -153,7 +152,9 @@ class CoreMetadata(SchemaBaseModel):
         "part of - e.g., a related collection.",
         default=None,
     )
-    associatedMedia: Optional[List[MediaObject]] = Field(
+
+    # using MediaType here to allow for MediaObject and its subclasses (e.g., DataDownload, VideoObject)
+    associatedMedia: Optional[Union[MediaType, List[MediaType]]] = Field(
         title="Resource content",
         description="A media object that encodes this CreativeWork. This property is a synonym for encoding.",
         default=None,
