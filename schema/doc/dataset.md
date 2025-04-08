@@ -5,7 +5,7 @@ for **required** and `0,1` or `0+` for **optional** in the Cardinality column of
 
 |Property|Class|Expected Type|Cardinality|Description|
 |---|---|---|---|---|
-|[additionalProperty](#additional-property)|Thing|PropertyValue|1+|A property-value pair representing an additional characteristic of the entity.|
+|[additionalProperty](#additional-property)|Thing|PropertyValue|0+|A property-value pair representing an additional characteristic of the entity.|
 |[variableMeasured](#variable-measured)| Dataset | Text \| PropertyValue | 0+ | The variableMeasured property can indicate (repeated as necessary) the variables that are measured in some dataset, either described as text or as pairs of identifier and description using PropertyValue. |
 |[sourceOrganization](#source-organization)|Thing|Organization \| Person|0+|The organization or person who creates the data.|
 |[includedInDataCatalog](#included-in-datacatalog)| Dataset | DataCatalog | 1+ | A data catalog which contains this dataset. |
