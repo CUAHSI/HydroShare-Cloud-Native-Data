@@ -398,18 +398,24 @@ class GeoShape(SchemaBaseModel):
         default="GeoShape",
         description="A structured representation that describes the coordinates of a geographic feature.",
     )
+    validate_bbox: bool = Field(default=True, exclude=True, description='Flag to turn on/off bounding box validation')
     box: str = Field(
         description="A box is a rectangular region defined by a pair of coordinates representing the "
         "southwest and northeast corners of the box."
     )
 
     @field_validator("box")
-    def validate_box(cls, v):
+    def validate_box(cls, v, info):
         if not isinstance(v, str):
             raise TypeError("string required")
         v = v.strip()
         if not v:
             raise ValueError("empty string")
+
+        # exit if validation is turned off
+        if not info.data.get("validate_bbox", 'Could not find "validate_bbox"'):
+            return v
+            
         v_parts = v.split(" ")
         if len(v_parts) != 4:
             raise ValueError("Bounding box must have 4 coordinate points")
@@ -605,3 +611,71 @@ class VideoObject(MediaObject):
 
 # combine the media objects together to make referencing easier
 MediaType = Union[MediaObject, DataDownload, VideoObject]
+
+
+class Dataset(CreativeWork):
+    measurementMethod: Optional[
+        Union[
+            HttpUrl,
+            List[HttpUrl],
+            DefinedTerm,
+            List[DefinedTerm],
+            str,
+            List[str],
+        ]
+    ] = None
+    issn: Optional[Union[str, List[str]]] = None
+    measurementTechnique: Optional[
+        Union[
+            str,
+            List[str],
+            HttpUrl,
+            List[HttpUrl],
+            DefinedTerm,
+            List[DefinedTerm],
+        ]
+    ] = None
+    catalog: Optional[Union["DataCatalog", List["DataCatalog"]]] = None
+    variablesMeasured: Optional[
+        Union[str, List[str], "PropertyValue", List["PropertyValue"]]
+    ] = None
+    variableMeasured: Optional[
+        Union[
+            str,
+            List[str],
+            "PropertyValue",
+            List["PropertyValue"],
+        ]
+    ] = None
+    includedDataCatalog: Optional[Union["DataCatalog", List["DataCatalog"]]] = None
+    includedInDataCatalog: Optional[Union["DataCatalog", List["DataCatalog"]]] = None
+    datasetTimeInterval: Optional[Union[datetime, List[datetime]]] = None
+    distribution: Optional[Union["DataDownload", List["DataDownload"]]] = None
+
+
+class DataCatalog(CreativeWork):
+    """
+    A collection of datasets.
+    """
+
+    measurementMethod: Optional[
+        Union[
+            HttpUrl,
+            List[HttpUrl],
+            DefinedTerm,
+            List[DefinedTerm],
+            str,
+            List[str],
+        ]
+    ] = None
+    dataset: Optional[Union[Dataset, List[Dataset]]] = None
+    measurementTechnique: Optional[
+        Union[
+            str,
+            List[str],
+            HttpUrl,
+            List[HttpUrl],
+            DefinedTerm,
+            List[DefinedTerm],
+        ]
+    ] = None
