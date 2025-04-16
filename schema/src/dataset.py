@@ -1,20 +1,106 @@
 from core import CoreMetadata
-from typing import Optional, List, Union
-from pydantic import Field
+from typing import Optional, List, Union, Literal
+from pydantic import Field, HttpUrl
+from datetime import datetime
 
-from base import PropertyValue, SourceOrganization
+from base import (
+    PropertyValue,
+    Organization,
+    DataCatalog,
+    Creator,
+    CreativeWork,
+    Provider
+)
 
 
-class DatasetMetadata(CoreMetadata):
-    variableMeasured: Optional[List[Union[str, PropertyValue]]] = Field(
+
+class GenericDataset(CoreMetadata):
+    """
+    A generic dataset extends the CoreMetadata class with a few additional fields and is designed to capture
+    scientific file-level metadata.. It also overrides many of the required CoreMetadata fields to make them
+    optional. It generally follows the design of the Schema.org Dataset class. 
+    """
+
+    # TODO: AssociatedMedia should be required.
+    
+    context: HttpUrl = Field(
+        alias="@context",  # type: ignore
+        default=HttpUrl("https://schema.org"),
+        description="Specifies the vocabulary employed for understanding the structured data markup.",
+    )
+    type: Literal["Dataset"] = Field(
+        alias="@type",  # type: ignore
+        default="DataSet",
+        description="A body of structured information describing some topic(s) of interest.",
+    )
+    
+    variableMeasured: List[Union[str, PropertyValue]] = Field(
         title="Variables measured", description="Measured variables."
     )
-    additionalProperty: Optional[List[PropertyValue]] = Field(
-        title="Additional properties",
-        default=[],
-        description="Additional properties of the dataset.",
+    
+    includedInDataCatalog: Optional[DataCatalog] = Field(
+        default=None,
+        title="DataCatalog", description="A data catalog which contains this dataset."
     )
-    sourceOrganization: Optional[SourceOrganization] = Field(
+
+    additionalProperty: Optional[
+        Union[str, List[str], PropertyValue, List[PropertyValue]]
+    ] = Field(
+        title="Additional properties",
+        default=None,
+        description="Additional properties of the dataset that don't fit into schema org.",
+    )
+    sourceOrganization: Optional[Organization] = Field(
+        default=None,
         title="Source organization",
         description="The organization that provided the data for this dataset.",
     )
+    ########################################
+    # make required CoreMetadata fields "Optional", but preserve the metadata defined in the parent class
+    name: Optional[str] = Field(
+        default=None,
+        title="Name or title",
+        description="A text string with a descriptive name or title for the resource.",
+    )
+    description: Optional[str] = Field(
+        default=None,
+        title="Description or abstract",
+        description="A text string containing a description/abstract for the resource.",
+    )
+    url: Optional[HttpUrl] = Field(
+        default=None,
+        title="URL",
+        description="A URL for the landing page that describes the resource and where the content "
+        "of the resource can be accessed. If there is no landing page,"
+        " provide the URL of the content.",
+    )
+    identifier: Optional[List[str]] = Field(
+        default=None,
+        title="Identifiers",
+        description="Any kind of identifier for the resource. Identifiers may be DOIs or unique strings "
+        "assigned by a repository. Multiple identifiers can be entered. Where identifiers can be "
+        "encoded as URLs, enter URLs here.",
+    )
+
+    creator: Optional[List[Union[Creator, Organization]]] = Field(
+        default=None,
+        description="Person or Organization that created the resource."
+    )
+    dateCreated: Optional[datetime] = Field(
+        default=None,
+        title="Date created", description="The date on which the resource was created."
+    )
+    keywords: Optional[List[str]] = Field(
+        default=None,
+        description="Keywords or tags used to describe the dataset, delimited by commas.",
+    )
+    license: Optional[Union[CreativeWork, HttpUrl]] = Field(
+        default=None,
+        description="A license document that applies to the resource."
+    )
+    provider: Optional[Union[Organization, Provider]] = Field(
+        default=None,
+        description="The repository, service provider, organization, person, or service performer that provides"
+        " access to the resource."
+    )
+
