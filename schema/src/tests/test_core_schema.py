@@ -338,7 +338,7 @@ async def test_core_schema_associated_media_cardinality(
     if multiple_media and multiple_media is not None:
         associated_media = [
             {
-                "@type": "MediaObject",
+                "@type": "DataDownload",
                 "contentUrl": "https://www.hydroshare.org/resource/51d1539bf6e94b15ac33f7631228118c/data/contents/USGS_Harvey_gages_TxLaMsAr.csv",
                 "encodingFormat": "text/csv",
                 "contentSize": "0.17 GB",
@@ -1288,12 +1288,12 @@ async def test_core_schema_funding_cardinality(core_data, core_model, multiple_f
     if multiple_funding and multiple_funding is not None:
         core_data["funding"] = [
             {
-                "@type": "MonetaryGrant",
+                "@type": "Grant",
                 "name": "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment - 1",
                 "identifier": "https://nsf.gov/awardsearch/showAward?AWD_ID=2118329",
             },
             {
-                "@type": "MonetaryGrant",
+                "@type": "Grant",
                 "name": "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment - 2",
                 "description": "Test grant description",
             },
@@ -1301,7 +1301,7 @@ async def test_core_schema_funding_cardinality(core_data, core_model, multiple_f
     elif multiple_funding is not None:
         core_data["funding"] = [
             {
-                "@type": "MonetaryGrant",
+                "@type": "Grant",
                 "name": "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment",
                 "identifier": "https://nsf.gov/awardsearch/showAward?AWD_ID=2118329",
                 "description": "Test grant description",
@@ -1313,7 +1313,7 @@ async def test_core_schema_funding_cardinality(core_data, core_model, multiple_f
     # validate the data model
     core_model_instance = await utils.validate_data_model(core_data, core_model)
     if multiple_funding and multiple_funding is not None:
-        assert core_model_instance.funding[0].type == "MonetaryGrant"
+        assert core_model_instance.funding[0].type == "Grant"
         assert (
             core_model_instance.funding[0].name
             == "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment - 1"
@@ -1326,7 +1326,7 @@ async def test_core_schema_funding_cardinality(core_data, core_model, multiple_f
         # assert core_model_instance.funding[0].funder.name == "National Science Foundation"
         # assert core_model_instance.funding[0].funder.url[0] == "https://ror.org/021nxhr62"
         # assert core_model_instance.funding[0].funder.identifier[1] == "https://doi.org/10.13039/100000001"
-        assert core_model_instance.funding[1].type == "MonetaryGrant"
+        assert core_model_instance.funding[1].type == "Grant"
         assert (
             core_model_instance.funding[1].name
             == "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment - 2"
@@ -1336,7 +1336,7 @@ async def test_core_schema_funding_cardinality(core_data, core_model, multiple_f
         # assert core_model_instance.funding[1].funder.name == "John Doe"
         # assert core_model_instance.funding[1].funder.email == "johnd@gmail.com"
     elif multiple_funding is not None:
-        assert core_model_instance.funding[0].type == "MonetaryGrant"
+        assert core_model_instance.funding[0].type == "Grant"
         assert (
             core_model_instance.funding[0].name
             == "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment"
@@ -1369,7 +1369,7 @@ async def test_core_schema_funding_funder_optional(
     if include_funder:
         core_data["funding"] = [
             {
-                "@type": "MonetaryGrant",
+                "@type": "Grant",
                 "name": "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment",
                 "identifier": "https://nsf.gov/awardsearch/showAward?AWD_ID=2118329",
                 "description": "Test grant description - 1",
@@ -1380,7 +1380,7 @@ async def test_core_schema_funding_funder_optional(
                 },
             },
             {
-                "@type": "MonetaryGrant",
+                "@type": "Grant",
                 "name": "Collaborative Research: Network Hub: Enabling, Supporting, and Communicating Critical Zone Research.",
                 "identifier": "NSF AWARD 2012748",
                 "description": "Test grant description - 2",
@@ -1391,7 +1391,7 @@ async def test_core_schema_funding_funder_optional(
                 },
             },
             {
-                "@type": "MonetaryGrant",
+                "@type": "Grant",
                 "name": "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment - 3",
                 "identifier": "https://usda.gov/awardsearch/showAward?AWD_ID=2118330",
                 "description": "Test grant description - 3",
@@ -1401,7 +1401,7 @@ async def test_core_schema_funding_funder_optional(
     else:
         core_data["funding"] = [
             {
-                "@type": "MonetaryGrant",
+                "@type": "Grant",
                 "name": "HDR Institute: Geospatial Understanding through an Integrative Discovery Environment",
                 "identifier": "https://nsf.gov/awardsearch/showAward?AWD_ID=2118329",
                 "description": "Test grant description - 1",
