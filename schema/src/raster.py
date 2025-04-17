@@ -10,26 +10,39 @@ from dataset import GenericDataset
 
 class GridVariable(BaseModel):
 
-    # context: HttpUrl = Field(
-    #     alias="@context",  # type: ignore
-    #     default=HttpUrl("https://schema.org"),
-    #     description="Specifies the vocabulary employed for understanding the structured data markup.",
-    # )
+    context: HttpUrl = Field(
+        alias="@context",  # type: ignore
+        default=HttpUrl(
+            "https://hydroshare.org/schema"
+        ),  # TODO: This is a placeholder for now.
+        description="Specifies the vocabulary employed for understanding the structured data markup.",
+    )
     type: Literal["GridVariable"] = Field(
         alias="@type",  # type: ignore
         default="GridVariable",
         description="A body of structured information describing geographic raster information.",
     )
-    
+
     # required fields
-    minValue: float = Field(title="Minimum Value", description="The ,inimum value in the raster grid")
-    maxValue: float = Field(title="Maximum Value", description="The maximum value in the raster grid")
-    noDataValue: float = Field(title="No Data Value", description="The numerical value used to represent null data in the raster grid")
+    minValue: float = Field(
+        title="Minimum Value", description="The ,inimum value in the raster grid"
+    )
+    maxValue: float = Field(
+        title="Maximum Value", description="The maximum value in the raster grid"
+    )
+    noDataValue: float = Field(
+        title="No Data Value",
+        description="The numerical value used to represent null data in the raster grid",
+    )
 
     # optional fields
-    name: Optional[str] = Field(default=None, title="Variable Name", description="The name of the variable measured in grid")
+    name: Optional[str] = Field(
+        default=None,
+        title="Variable Name",
+        description="The name of the variable measured in grid",
+    )
     variableMeasured: Optional[Union[str, PropertyValue]] = Field(
-        default = None,
+        default=None,
         title="Variables measured",
         description="A description of the variable that is measured in the raster grid.",
     )
@@ -47,7 +60,7 @@ class GeographicRaster(GenericDataset):
     """
 
     # TODO: SpatialExtent should be required.
-    
+
     # context: HttpUrl = Field(
     #     alias="@context",  # type: ignore
     #     default=HttpUrl("https://schema.org"),

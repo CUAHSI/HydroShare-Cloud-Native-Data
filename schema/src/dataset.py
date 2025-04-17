@@ -9,23 +9,24 @@ from base import (
     DataCatalog,
     Creator,
     CreativeWork,
-    Provider
+    Provider,
 )
-
 
 
 class GenericDataset(CoreMetadata):
     """
     A generic dataset extends the CoreMetadata class with a few additional fields and is designed to capture
     scientific file-level metadata.. It also overrides many of the required CoreMetadata fields to make them
-    optional. It generally follows the design of the Schema.org Dataset class. 
+    optional. It generally follows the design of the Schema.org Dataset class.
     """
 
     # TODO: AssociatedMedia should be required.
-    
+
     context: HttpUrl = Field(
         alias="@context",  # type: ignore
-        default=HttpUrl("https://schema.org"),
+        default=HttpUrl(
+            "https://hydroshare.org/schema"
+        ),  # TODO: This is a placeholder for now.
         description="Specifies the vocabulary employed for understanding the structured data markup.",
     )
     type: Literal["Dataset"] = Field(
@@ -33,14 +34,15 @@ class GenericDataset(CoreMetadata):
         default="DataSet",
         description="A body of structured information describing some topic(s) of interest.",
     )
-    
+
     variableMeasured: List[Union[str, PropertyValue]] = Field(
         title="Variables measured", description="Measured variables."
     )
-    
+
     includedInDataCatalog: Optional[DataCatalog] = Field(
         default=None,
-        title="DataCatalog", description="A data catalog which contains this dataset."
+        title="DataCatalog",
+        description="A data catalog which contains this dataset.",
     )
 
     additionalProperty: Optional[
@@ -83,24 +85,22 @@ class GenericDataset(CoreMetadata):
     )
 
     creator: Optional[List[Union[Creator, Organization]]] = Field(
-        default=None,
-        description="Person or Organization that created the resource."
+        default=None, description="Person or Organization that created the resource."
     )
     dateCreated: Optional[datetime] = Field(
         default=None,
-        title="Date created", description="The date on which the resource was created."
+        title="Date created",
+        description="The date on which the resource was created.",
     )
     keywords: Optional[List[str]] = Field(
         default=None,
         description="Keywords or tags used to describe the dataset, delimited by commas.",
     )
     license: Optional[Union[CreativeWork, HttpUrl]] = Field(
-        default=None,
-        description="A license document that applies to the resource."
+        default=None, description="A license document that applies to the resource."
     )
     provider: Optional[Union[Organization, Provider]] = Field(
         default=None,
         description="The repository, service provider, organization, person, or service performer that provides"
-        " access to the resource."
+        " access to the resource.",
     )
-
