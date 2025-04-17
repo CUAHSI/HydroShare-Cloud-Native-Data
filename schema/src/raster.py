@@ -1,11 +1,16 @@
+#!/usr/bin/env python3
+
+"""
+CUAHSI's extension to the SchemaOrg vocabulary to better encapsulate
+scientific raster metadata.
+"""
+
 from typing import List, Union, Optional, Literal
 from pydantic import Field, field_validator, BaseModel, HttpUrl
 from base import PropertyValue
 
 
 from dataset import GenericDataset
-
-# TODO: How well does this align with the HS_MODELS representation that Scott shared?
 
 
 class GridVariable(BaseModel):
@@ -59,13 +64,14 @@ class GeographicRaster(GenericDataset):
     sucha as ESRI Grid, ASCII Raster, and GeoTiff.
     """
 
-    # TODO: SpatialExtent should be required.
+    context: HttpUrl = Field(
+        alias="@context",  # type: ignore
+        default=HttpUrl(
+            "https://hydroshare.org/schema"
+        ),  # TODO: This is a placeholder for now.
+        description="Specifies the vocabulary employed for understanding the structured data markup.",
+    )
 
-    # context: HttpUrl = Field(
-    #     alias="@context",  # type: ignore
-    #     default=HttpUrl("https://schema.org"),
-    #     description="Specifies the vocabulary employed for understanding the structured data markup.",
-    # )
     type: Literal["GeographicRaster"] = Field(
         alias="@type",  # type: ignore
         default="GeographicRaster",
@@ -93,6 +99,10 @@ class GeographicRaster(GenericDataset):
     variableMeasured: List[Union[str, PropertyValue, GridVariable]] = Field(
         title="Variables measured",
         description="The variables that are measured in the raster dataset.",
+    )
+    spatialCoverage: Place = Field(
+        title="Spatial Coverage",
+        description="The spatialCoverage indicates the place(s) which are the focus of the content. ",
     )
 
     @field_validator("cellValueType")
