@@ -335,11 +335,6 @@ class SpatialReference(SchemaBaseModel):
         description="The string representation of the spatial reference system in Well-Known-Text format.",
         default=None,
     )
-    projString: Optional[str] = Field(
-        title="SRS Proj String",
-        description="The string representation of the spatial reference system in PROJ4 format.",
-        default=None,
-    )
 
     @field_validator("srsType")
     def validate_content_size(cls, v):
