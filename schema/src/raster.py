@@ -7,7 +7,7 @@ scientific raster metadata.
 
 from typing import List, Union, Optional, Literal
 from pydantic import Field, field_validator, BaseModel, HttpUrl
-from base import PropertyValue
+from base import PropertyValue, Place
 
 
 from dataset import GenericDataset

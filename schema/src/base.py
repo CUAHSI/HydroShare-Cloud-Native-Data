@@ -310,6 +310,47 @@ class IdentifierStr(str):
         return cls(", ".join(value))  # Join the list into a single string for storage
 
 
+# TODO: start here.
+class SpatialReference(SchemaBaseModel):
+    type: Literal["SpatialReference"] = Field(
+        alias="@type",  # type: ignore
+        default="SpatialReference",
+        description="The spatial reference system associated with the Place's geographic representation.",
+    )
+    name: str = Field(
+        title="Name",
+        description="Name of the spatial reference system.",
+    )
+    srsType: str = Field(
+        title="SRS Type",
+        description="Type of the spatial reference system, either Geographic or Projected.",
+    )
+    code: Optional[str] = Field(
+        title="Code",
+        description="Code of the spatial reference system.",
+        default=None,
+    )
+    wktString: Optional[str] = Field(
+        title="SRS WKT String",
+        description="The string representation of the spatial reference system in Well-Known-Text format.",
+        default=None,
+    )
+    projString: Optional[str] = Field(
+        title="SRS Proj String",
+        description="The string representation of the spatial reference system in PROJ4 format.",
+        default=None,
+    )
+
+    @field_validator("srsType")
+    def validate_content_size(cls, v):
+        v = v.strip().lower()
+        if not v:
+            raise ValueError("empty string")
+        if v not in ["geographic", "projected"]:
+            raise ValueError("SRS Type must be either 'geographic' or 'projected'")
+        return v
+
+
 class Grant(SchemaBaseModel):
     type: Literal["Grant"] = Field(
         alias="@type",  # type: ignore
@@ -398,7 +439,11 @@ class GeoShape(SchemaBaseModel):
         default="GeoShape",
         description="A structured representation that describes the coordinates of a geographic feature.",
     )
-    validate_bbox: bool = Field(default=True, exclude=True, description='Flag to turn on/off bounding box validation')
+    validate_bbox: bool = Field(
+        default=True,
+        exclude=True,
+        description="Flag to turn on/off bounding box validation",
+    )
     box: str = Field(
         description="A box is a rectangular region defined by a pair of coordinates representing the "
         "southwest and northeast corners of the box."
@@ -415,7 +460,7 @@ class GeoShape(SchemaBaseModel):
         # exit if validation is turned off
         if not info.data.get("validate_bbox", 'Could not find "validate_bbox"'):
             return v
-            
+
         v_parts = v.split(" ")
         if len(v_parts) != 4:
             raise ValueError("Bounding box must have 4 coordinate points")
@@ -499,8 +544,13 @@ class Place(SchemaBaseModel):
 
     additionalProperty: Optional[List[PropertyValue]] = Field(
         title="Additional properties",
-        default=[],  # TODO: this should probably be default=None since the field is optional.
+        default=None,
         description="Additional properties of the place.",
+    )
+
+    srs: Optional[SpatialReference] = Field(
+        description="The spatial reference system associated with the Place's geographic representation",
+        default=None,
     )
 
     @model_validator(mode="after")
