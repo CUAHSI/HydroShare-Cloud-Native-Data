@@ -8,9 +8,9 @@ scientific vector metadata.
 
 from typing import List, Union, Literal
 from pydantic import Field, field_validator, HttpUrl
-from base import PropertyValue, MediaType, Place
+from .base import PropertyValue, MediaType, Place
 
-from dataset import GenericDataset
+from .dataset import GenericDataset
 
 
 class GeographicVector(GenericDataset):

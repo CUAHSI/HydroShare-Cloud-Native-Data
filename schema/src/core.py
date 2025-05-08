@@ -7,7 +7,7 @@ from pydantic import (
     HttpUrl,
 )
 
-from base import (
+from .base import (
     CreativeWork,
     SchemaBaseModel,
     Creator,
@@ -47,6 +47,11 @@ class CoreMetadata(SchemaBaseModel):
         #        json_schema_extra={
         #            "enum": ["Dataset", "Notebook", "Software Source Code"],
         #        },
+    )
+    additionalType: Optional[str] = Field(
+        title="Additional type",
+        description="An additional type for the resource. This can be used to further specify the type of the"
+                    " resource (e.g., Composite Resource).",
     )
     name: str = Field(
         title="Name or title",

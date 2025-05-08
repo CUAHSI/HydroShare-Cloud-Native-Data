@@ -1,9 +1,13 @@
-from core import CoreMetadata
+from .core import CoreMetadata
 from typing import Optional, List, Union, Literal
 from pydantic import Field, HttpUrl
 from datetime import datetime
 
-from base import (
+from .base import (
+    Public,
+    Published,
+    Discoverable,
+    Private,
     PropertyValue,
     Organization,
     DataCatalog,
@@ -103,4 +107,8 @@ class GenericDataset(CoreMetadata):
         default=None,
         description="The repository, service provider, organization, person, or service performer that provides"
         " access to the resource.",
+    )
+    sharing_status: Optional[Union[Public, Published, Private, Discoverable]] = Field(
+        default=None,
+        description="The Sharing status of the resource. This is a controlled vocabulary term from CUAHSI HydroShare",
     )

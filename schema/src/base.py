@@ -41,6 +41,48 @@ class SchemaBaseModel(BaseModel):
     model_config = ConfigDict(json_schema_extra=modify_json_schema)
 
 
+class DefinedTerm(SchemaBaseModel):
+    type: str = Field(alias="@type", default="DefinedTerm")
+    name: str = Field(description="The name of the term or item being defined.")
+    description: str = Field(description="The description of the item being defined.")
+
+
+class Published(DefinedTerm):
+    name: str = Field(default="Published")
+    description: str = Field(
+        default="The resource has been permanently published and should be considered final and complete",
+        readOnly=True,
+        description="The description of the item being defined.",
+    )
+
+
+class Public(DefinedTerm):
+    name: str = Field(default="Public")
+    description: str = Field(
+        default="The resource is publicly accessible and can be viewed or downloaded by anyone",
+        readOnly=True,
+        description="The description of the item being defined.",
+    )
+
+
+class Private(DefinedTerm):
+    name: str = Field(default="Private")
+    description: str = Field(
+        default="The resource is private and can only be accessed by authorized users",
+        readOnly=True,
+        description="The description of the item being defined.",
+    )
+
+
+class Discoverable(DefinedTerm):
+    name: str = Field(default="Discoverable")
+    description: str = Field(
+        default="The resource is discoverable and can be found through search engines or other discovery mechanisms",
+        readOnly=True,
+        description="The description of the item being defined.",
+    )
+
+
 class CreativeWork(SchemaBaseModel):
     type: Literal["CreativeWork"] = Field(
         alias="@type",  # type: ignore
