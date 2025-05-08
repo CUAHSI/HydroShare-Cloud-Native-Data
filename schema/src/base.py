@@ -186,6 +186,27 @@ class Creator(Person):
     )
 
 
+class Contributor(Person):
+    identifier: Optional[str] = Field(
+        description="ORCID identifier for contributor.",
+        json_schema_extra={
+            "pattern": orcid_pattern,
+            "options": {"placeholder": orcid_pattern_placeholder},
+            "errorMessage": {"pattern": orcid_pattern_error},
+        },
+        default=None,
+    )
+    email: Optional[EmailStr] = Field(
+        description="A string containing an email address for the creator.",
+        default=None,
+    )
+    affiliation: Optional[Affiliation] = Field(
+        description="The affiliation of the creator with the organization.",
+        default=None,
+    )
+
+
+
 class FunderOrganization(Organization):
     @classmethod
     def __get_pydantic_json_schema__(

@@ -11,6 +11,7 @@ from .base import (
     CreativeWork,
     SchemaBaseModel,
     Creator,
+    Contributor,
     Organization,
     Provider,
     PublisherOrganization,
@@ -76,6 +77,9 @@ class CoreMetadata(SchemaBaseModel):
 
     creator: List[Union[Creator, Organization]] = Field(
         description="Person or Organization that created the resource."
+    )
+    contributor: List[Union[Contributor, Organization]] = Field(
+        description="Person or Organization that contributed to the resource."
     )
     dateCreated: datetime = Field(
         title="Date created", description="The date on which the resource was created."
