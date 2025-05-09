@@ -38,7 +38,7 @@ def modify_json_schema(schema: dict[str, Any]) -> None:
 
 
 class SchemaBaseModel(BaseModel):
-    model_config = ConfigDict(json_schema_extra=modify_json_schema)
+    model_config = ConfigDict(json_schema_extra=modify_json_schema, extra='allow')
 
 
 class DefinedTerm(SchemaBaseModel):
