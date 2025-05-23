@@ -6,11 +6,45 @@ scientific vector metadata.
 """
 
 
-from typing import List, Union, Literal
-from pydantic import Field, field_validator, HttpUrl
-from .base import PropertyValue, MediaType, Place
+from typing import List, Union, Literal, Optional
+from pydantic import Field, field_validator, HttpUrl, ConfigDict
+from .base import PropertyValue, MediaType, Place, SchemaBaseModel
 
 from .dataset import GenericDataset
+
+
+
+
+class FieldInformation(SchemaBaseModel):
+    """
+    A class used to represent the metadata associated with a field in the attribute table for a geographic
+    feature aggregation
+    """
+
+    model_config = ConfigDict(title='Geographic Feature Field Metadata')
+
+    field_name: str = Field(
+        max_length=128, title="Field name", description="A string containing the name of the attribute table field",
+    )
+    field_type: str = Field(
+        max_length=128, title="Field type", description="A string containing the data type of the values in the field",
+    )
+    # TODO: What is the "field_type_code"? It's not displayed on the resource landing page, but it's encoded in the
+    #  aggregation metadata as an integer value.
+    field_type_code: Optional[str] = Field(
+        default=None,
+        max_length=50,
+        title="Field type code",
+        description="A string value containing a code that indicates the field type",
+    )
+    field_width: Optional[int] = Field(
+        default=None, title="Field width", description="An integer value containing the width of the attribute field",
+    )
+    field_precision: Optional[int] = Field(
+        default=None,
+        title="Field precision",
+        description="An integer value containing the precision of the attribute field",
+    )
 
 
 class GeographicVector(GenericDataset):
@@ -57,6 +91,12 @@ class GeographicVector(GenericDataset):
     spatialCoverage: Place = Field(
         title="Spatial Coverage",
         description="The spatialCoverage indicates the place(s) which are the focus of the content. ",
+    )
+
+    field_information: List[FieldInformation] = Field(
+        default=[],
+        title="Field information",
+        description="A list of objects containing information about the fields in the dataset attribute table",
     )
 
     @field_validator("associatedMedia")
