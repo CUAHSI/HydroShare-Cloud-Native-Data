@@ -41,7 +41,6 @@ class Dimension(BaseModel):
         description="The description of the variable measured",
     )
 
-
 class DataVariable(BaseModel):
 
     context: HttpUrl = Field(
@@ -61,10 +60,20 @@ class DataVariable(BaseModel):
         title="Variable Name",
         description="The name of the variable measured",
     )
-    dimension: Union[Dimension, list[Dimension]] = Field(
+
+    # dimension: Union[Dimension, list[Dimension]] = Field(
+    #     title="Variable Dimensions",
+    #     description="The dimensions of the variable measured",
+    # )
+    dimensions: Union[str, list[str]] = Field(
         title="Variable Dimensions",
-        description="The dimensions of the variable measured",
+        description="The dimension names corresponding to the variable being measured",
     )
+    
+    # coordinates: Optional[Union[DataVariable, list[DataVariable]]] = Field(
+    #     title="Coordinates",
+    #     description="Coordinate variables that provide values along a dimension",
+    # )
     description: Optional[str] = Field(
         default=None,
         title="Variable Description",
@@ -80,11 +89,11 @@ class DataVariable(BaseModel):
         title="Variable Unit",
         description="The unit of the variable measured",
     )
-    shape: Optional[Union[int, list[int]]] = Field(
-        default=None,
-        title="Variable Shape",
-        description="The shape of the variable",
-    )
+    # shape: Optional[Union[int, list[int]]] = Field(
+    #     default=None,
+    #     title="Variable Shape",
+    #     description="The shape of the variable",
+    # )
     minValue: Optional[float] = Field(
         title="Minimum Value",
         description="The minimum value in the raster grid",
@@ -142,16 +151,11 @@ class GriddedVariable(DataVariable):
     )
 
     # required fields
-    minValue: float = Field(
-        title="Minimum Value", description="The ,inimum value in the raster grid"
+    dataType: str = Field(
+        title="The data type of the variable",
+        description="The data type of the variable measured",
     )
-    maxValue: float = Field(
-        title="Maximum Value", description="The maximum value in the raster grid"
-    )
-    noDataValue: float = Field(
-        title="No Data Value",
-        description="The numerical value used to represent null data in the raster grid",
-    )
+
 
     # optional fields
     name: Optional[str] = Field(
@@ -159,9 +163,20 @@ class GriddedVariable(DataVariable):
         title="Variable Name",
         description="The name of the variable measured in grid",
     )
+    minValue: Optional[float] = Field(
+        title="Minimum Value", description="The minimum value in the grid"
+    )
+    maxValue: Optional[float] = Field(
+        title="Maximum Value", description="The maximum value in the grid"
+    )
+    noDataValue: Optional[float] = Field(
+        title="No Data Value",
+        description="The numerical value used to represent null data in the grid",
+    )
+    
 
 
-class BandVariable(DataVariable):
+class BandVariable(GriddedVariable):
 
     context: HttpUrl = Field(
         alias="@context",  # type: ignore
@@ -181,25 +196,29 @@ class BandVariable(DataVariable):
         title="Raster Band",
         description="The band number or identifier for the variable measured in the raster grid.",
     )
-    dataType: str = Field(
-        title="The data type of the variable",
-        description="The data type of the variable measured",
-    )
-    minValue: float = Field(
-        title="Minimum Value",
-        description="The ,inimum value in the raster grid",
-    )
-    maxValue: float = Field(
-        title="Maximum Value",
-        description="The maximum value in the raster grid",
-    )
-    noDataValue: float = Field(
-        title="No Data Value",
-        description="The numerical value used to represent null data in the raster grid",
-    )
-    # optional fields
-    name: Optional[str] = Field(
-        default=None,
-        title="Variable Name",
-        description="The name of the variable measured in grid",
-    )
+    # dataType: str = Field(
+    #     title="The data type of the variable",
+    #     description="The data type of the variable measured",
+    # )
+    # minValue: float = Field(
+    #     title="Minimum Value",
+    #     description="The minimum value in the raster grid",
+    # )
+    # maxValue: float = Field(
+    #     title="Maximum Value",
+    #     description="The maximum value in the raster grid",
+    # )
+    # noDataValue: float = Field(
+    #     title="No Data Value",
+    #     description="The numerical value used to represent null data in the raster grid",
+    # )
+    # # optional fields
+    # name: Optional[str] = Field(
+    #     default=None,
+    #     title="Variable Name",
+    #     description="The name of the variable measured in grid",
+    # )
+    #     coordinates: List[DataVariable] = Field(
+    #     title="Coordinates",
+    #     description="Coordinate variables that provide values along a dimension",
+    # )

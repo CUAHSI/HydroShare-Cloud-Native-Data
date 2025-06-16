@@ -12,6 +12,8 @@ from base import (
     Provider,
 )
 
+from datavariable import Dimension, DataVariable
+
 
 class GenericDataset(CoreMetadata):
     """
@@ -35,9 +37,20 @@ class GenericDataset(CoreMetadata):
         description="A body of structured information describing some topic(s) of interest.",
     )
 
-    variableMeasured: List[Union[str, PropertyValue]] = Field(
+    variableMeasured: List[Union[str, PropertyValue, DataVariable]] = Field(
         title="Variables measured", description="Measured variables."
     )
+
+    dimensions: List[Dimension] = Field(
+        title="Dimensions",
+        description="Dimensions defined in the multi-dimensional dataset.",
+    )
+    
+    coordinates: Optional[List[DataVariable]] = Field(
+        title="Coordinates",
+        description="Coordinate variables that provide values along a dimension",
+    )
+
 
     includedInDataCatalog: Optional[DataCatalog] = Field(
         default=None,
