@@ -10,6 +10,7 @@ from base import (
     Creator,
     CreativeWork,
     Provider,
+    MediaType,
 )
 
 from datavariable import Dimension, DataVariable
@@ -21,8 +22,6 @@ class ScientificDataset(CoreMetadata):
     scientific file-level metadata.. It also overrides many of the required CoreMetadata fields to make them
     optional. It generally follows the design of the Schema.org Dataset class.
     """
-
-    # TODO: AssociatedMedia should be required.
 
     context: HttpUrl = Field(
         alias="@context",  # type: ignore
@@ -46,12 +45,17 @@ class ScientificDataset(CoreMetadata):
         description="Dimensions defined in the multi-dimensional dataset.",
     )
     
+    # redefine associatedMedia from "Core" as a required field
+    associatedMedia: Union[MediaType, List[MediaType]] = Field(
+        title="Resource content",
+        description="A media object that encodes this CreativeWork. This property is a synonym for encoding.",
+    )
+    
     coordinates: Optional[List[DataVariable]] = Field(
         default=None,
         title="Coordinates",
         description="Coordinate variables that provide values along a dimension",
     )
-
 
     includedInDataCatalog: Optional[DataCatalog] = Field(
         default=None,
@@ -71,8 +75,12 @@ class ScientificDataset(CoreMetadata):
         title="Source organization",
         description="The organization that provided the data for this dataset.",
     )
-    ########################################
-    # make required CoreMetadata fields "Optional", but preserve the metadata defined in the parent class
+
+    # ---------------------------------------------
+    # make required CoreMetadata fields "Optional",
+    # but preserve the metadata defined in the
+    # parent class
+    # ---------------------------------------------
     name: Optional[str] = Field(
         default=None,
         title="Name or title",
