@@ -15,7 +15,7 @@ from base import (
 from datavariable import Dimension, DataVariable
 
 
-class GenericDataset(CoreMetadata):
+class ScientificDataset(CoreMetadata):
     """
     A generic dataset extends the CoreMetadata class with a few additional fields and is designed to capture
     scientific file-level metadata.. It also overrides many of the required CoreMetadata fields to make them
@@ -31,9 +31,9 @@ class GenericDataset(CoreMetadata):
         ),  # TODO: This is a placeholder for now.
         description="Specifies the vocabulary employed for understanding the structured data markup.",
     )
-    type: Literal["Dataset"] = Field(
+    type: Literal["ScientificDataset"] = Field(
         alias="@type",  # type: ignore
-        default="DataSet",
+        default="ScientificDataset",
         description="A body of structured information describing some topic(s) of interest.",
     )
 
@@ -47,6 +47,7 @@ class GenericDataset(CoreMetadata):
     )
     
     coordinates: Optional[List[DataVariable]] = Field(
+        default=None,
         title="Coordinates",
         description="Coordinate variables that provide values along a dimension",
     )

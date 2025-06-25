@@ -135,90 +135,90 @@ class DataVariable(BaseModel):
 #    )
 
 
-class GriddedVariable(DataVariable):
+# class GriddedVariable(DataVariable):
 
-    context: HttpUrl = Field(
-        alias="@context",  # type: ignore
-        default=HttpUrl(
-            "https://hydroshare.org/schema"
-        ),  # TODO: This is a placeholder for now.
-        description="Specifies the vocabulary employed for understanding the structured data markup.",
-    )
-    type: Literal["GriddedVariable"] = Field(
-        alias="@type",  # type: ignore
-        default="GriddedVariable",
-        description="A body of structured information describing gridded variable information.",
-    )
+#     context: HttpUrl = Field(
+#         alias="@context",  # type: ignore
+#         default=HttpUrl(
+#             "https://hydroshare.org/schema"
+#         ),  # TODO: This is a placeholder for now.
+#         description="Specifies the vocabulary employed for understanding the structured data markup.",
+#     )
+#     type: Literal["GriddedVariable"] = Field(
+#         alias="@type",  # type: ignore
+#         default="GriddedVariable",
+#         description="A body of structured information describing gridded variable information.",
+#     )
 
-    # required fields
-    dataType: str = Field(
-        title="The data type of the variable",
-        description="The data type of the variable measured",
-    )
+#     # required fields
+#     dataType: str = Field(
+#         title="The data type of the variable",
+#         description="The data type of the variable measured",
+#     )
 
 
-    # optional fields
-    name: Optional[str] = Field(
-        default=None,
-        title="Variable Name",
-        description="The name of the variable measured in grid",
-    )
-    minValue: Optional[float] = Field(
-        title="Minimum Value", description="The minimum value in the grid"
-    )
-    maxValue: Optional[float] = Field(
-        title="Maximum Value", description="The maximum value in the grid"
-    )
-    noDataValue: Optional[float] = Field(
-        title="No Data Value",
-        description="The numerical value used to represent null data in the grid",
-    )
+#     # optional fields
+#     name: Optional[str] = Field(
+#         default=None,
+#         title="Variable Name",
+#         description="The name of the variable measured in grid",
+#     )
+#     minValue: Optional[float] = Field(
+#         title="Minimum Value", description="The minimum value in the grid"
+#     )
+#     maxValue: Optional[float] = Field(
+#         title="Maximum Value", description="The maximum value in the grid"
+#     )
+#     noDataValue: Optional[float] = Field(
+#         title="No Data Value",
+#         description="The numerical value used to represent null data in the grid",
+#     )
     
 
 
-class BandVariable(GriddedVariable):
+# class BandVariable(GriddedVariable):
 
-    context: HttpUrl = Field(
-        alias="@context",  # type: ignore
-        default=HttpUrl(
-            "https://hydroshare.org/schema"
-        ),  # TODO: This is a placeholder for now.
-        description="Specifies the vocabulary employed for understanding the structured data markup.",
-    )
-    type: Literal["BandVariable"] = Field(
-        alias="@type",  # type: ignore
-        default="BandVariable",
-        description="A body of structured information describing gridded band information.",
-    )
+#     context: HttpUrl = Field(
+#         alias="@context",  # type: ignore
+#         default=HttpUrl(
+#             "https://hydroshare.org/schema"
+#         ),  # TODO: This is a placeholder for now.
+#         description="Specifies the vocabulary employed for understanding the structured data markup.",
+#     )
+#     type: Literal["BandVariable"] = Field(
+#         alias="@type",  # type: ignore
+#         default="BandVariable",
+#         description="A body of structured information describing gridded band information.",
+#     )
 
-    # required fields
-    band: Union[str, int] = Field(
-        title="Raster Band",
-        description="The band number or identifier for the variable measured in the raster grid.",
-    )
-    # dataType: str = Field(
-    #     title="The data type of the variable",
-    #     description="The data type of the variable measured",
-    # )
-    # minValue: float = Field(
-    #     title="Minimum Value",
-    #     description="The minimum value in the raster grid",
-    # )
-    # maxValue: float = Field(
-    #     title="Maximum Value",
-    #     description="The maximum value in the raster grid",
-    # )
-    # noDataValue: float = Field(
-    #     title="No Data Value",
-    #     description="The numerical value used to represent null data in the raster grid",
-    # )
-    # # optional fields
-    # name: Optional[str] = Field(
-    #     default=None,
-    #     title="Variable Name",
-    #     description="The name of the variable measured in grid",
-    # )
-    #     coordinates: List[DataVariable] = Field(
-    #     title="Coordinates",
-    #     description="Coordinate variables that provide values along a dimension",
-    # )
+#     # required fields
+#     band: Union[str, int] = Field(
+#         title="Raster Band",
+#         description="The band number or identifier for the variable measured in the raster grid.",
+#     )
+#     # dataType: str = Field(
+#     #     title="The data type of the variable",
+#     #     description="The data type of the variable measured",
+#     # )
+#     # minValue: float = Field(
+#     #     title="Minimum Value",
+#     #     description="The minimum value in the raster grid",
+#     # )
+#     # maxValue: float = Field(
+#     #     title="Maximum Value",
+#     #     description="The maximum value in the raster grid",
+#     # )
+#     # noDataValue: float = Field(
+#     #     title="No Data Value",
+#     #     description="The numerical value used to represent null data in the raster grid",
+#     # )
+#     # # optional fields
+#     # name: Optional[str] = Field(
+#     #     default=None,
+#     #     title="Variable Name",
+#     #     description="The name of the variable measured in grid",
+#     # )
+#     #     coordinates: List[DataVariable] = Field(
+#     #     title="Coordinates",
+#     #     description="Coordinate variables that provide values along a dimension",
+#     # )

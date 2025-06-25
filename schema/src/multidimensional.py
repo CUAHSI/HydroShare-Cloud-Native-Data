@@ -13,6 +13,9 @@ from base import PropertyValue, Place
 from dataset import GenericDataset
 from datavariable import DataVariable, Dimension
 
+# array
+# matrix
+# cube
 
 class MultiDimensional(GenericDataset):
     """
