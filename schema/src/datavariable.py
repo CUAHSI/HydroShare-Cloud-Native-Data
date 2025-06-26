@@ -79,17 +79,17 @@ class DataVariable(BaseModel):
         title="Variable Unit",
         description="The unit of the variable measured",
     )
-    minValue: Optional[float] = Field(
+    minValue: Optional[Union[float,str]] = Field(
         title="Minimum Value",
         description="The minimum value in the raster grid",
         default=None,
     )
-    maxValue: Optional[float] = Field(
+    maxValue: Optional[Union[float,str]] = Field(
         title="Maximum Value",
         description="The maximum value in the raster grid",
         default=None,
     )
-    noDataValue: Optional[float] = Field(
+    noDataValue: Optional[Union[float,str]] = Field(
         title="No Data Value",
         description="The numerical value used to represent null data in the raster grid",
         default=None,
