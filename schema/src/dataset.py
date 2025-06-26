@@ -1,3 +1,4 @@
+from enum import Enum
 from core import CoreMetadata
 from typing import Optional, List, Union, Literal
 from pydantic import Field, HttpUrl
@@ -15,6 +16,12 @@ from base import (
 
 from datavariable import Dimension, DataVariable
 
+
+class AdditionalType(str, Enum):
+    GEOGRAPHIC_FEATURE = 'GeographicFeature'
+    GEOGRAPHIC_RASTER = 'GeographicRaster'
+    MULTIDIMENSIONAL = 'MultiDimensional'
+    TABULAR = 'Tabular'
 
 class ScientificDataset(CoreMetadata):
     """
@@ -35,7 +42,7 @@ class ScientificDataset(CoreMetadata):
         default="ScientificDataset",
         description="A body of structured information describing some topic(s) of interest.",
     )
-
+                    
     variableMeasured: List[Union[str, PropertyValue, DataVariable]] = Field(
         title="Variables measured", description="Measured variables."
     )
@@ -75,7 +82,12 @@ class ScientificDataset(CoreMetadata):
         title="Source organization",
         description="The organization that provided the data for this dataset.",
     )
-
+    additionalType: Optional[AdditionalType] = Field(
+        default=None,
+        title="Additional Type",
+        description = "Additional descriptive types associated with the ScientificDataset. This is typically used by applications to provide specialized funcationality for categories for content."
+    )
+    
     # ---------------------------------------------
     # make required CoreMetadata fields "Optional",
     # but preserve the metadata defined in the
