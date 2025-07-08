@@ -1,1 +1,0 @@
-To run these notebooks, test data must be downloaded and save in the subdirectory `data` (i.e. `src/notebooks/data`). The test datasets are located in the following HydroShare resource: https://www.hydroshare.org/resource/24a191169881433d9f894f896eba5263/.
