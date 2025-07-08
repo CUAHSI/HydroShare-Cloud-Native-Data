@@ -34,6 +34,9 @@ from .base import (
 
 class CoreMetadata(SchemaBaseModel):
 
+    ###################
+    # REQUIRED FIELDS #
+    ###################
     context: HttpUrl = Field(
         alias="@context",  # type: ignore
         default=HttpUrl(
@@ -79,9 +82,6 @@ class CoreMetadata(SchemaBaseModel):
     creator: List[Union[Creator, Organization]] = Field(
         description="Person or Organization that created the resource."
     )
-    contributor: List[Union[Contributor, Organization]] = Field(
-        description="Person or Organization that contributed to the resource."
-    )
     dateCreated: datetime = Field(
         title="Date created", description="The date on which the resource was created."
     )
@@ -95,6 +95,14 @@ class CoreMetadata(SchemaBaseModel):
     provider: Union[Organization, Provider] = Field(
         description="The repository, service provider, organization, person, or service performer that provides"
         " access to the resource."
+    )
+
+    ###################
+    # OPTIONAL FIELDS #
+    ###################
+    contributor: Optional[List[Union[Contributor, Organization]]] = Field(
+        description="Person or Organization that contributed to the resource.",
+        default=None
     )
     publisher: Optional[PublisherOrganization] = Field(
         title="Publisher",

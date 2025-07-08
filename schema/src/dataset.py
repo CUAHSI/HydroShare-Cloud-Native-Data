@@ -18,7 +18,7 @@ from .base import (
     MediaType,
 )
 
-from datavariable import Dimension, DataVariable
+from .datavariable import Dimension, DataVariable
 
 
 class AdditionalType(str, Enum):
