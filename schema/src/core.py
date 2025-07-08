@@ -28,6 +28,7 @@ from .base import (
     HasPart,
     IsPartOf,
     MediaType,
+    PropertyValue,
 )
 
 
@@ -162,6 +163,11 @@ class CoreMetadata(SchemaBaseModel):
         description="Link to or citation for a related resource that this resource is a "
         "part of - e.g., a related collection.",
         default=None,
+    )
+    additionalProperty: Optional[List[PropertyValue]] = Field(
+        title="Additional properties",
+        default=None,
+        description="Additional properties of the place.",
     )
 
     # using MediaType here to allow for MediaObject and its subclasses (e.g., DataDownload, VideoObject)

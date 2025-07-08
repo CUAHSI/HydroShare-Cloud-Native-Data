@@ -10,6 +10,7 @@ from pydantic import (
     EmailStr,
     Field,
     HttpUrl,
+    AnyUrl,
     field_validator,
     model_validator,
     GetJsonSchemaHandler,
@@ -626,7 +627,7 @@ class MediaObject(SchemaBaseModel):
         default="MediaObject",
         description="An item that encodes the record.",
     )
-    contentUrl: HttpUrl = Field(
+    contentUrl: AnyUrl = Field(
         title="Content URL",
         description="The direct URL link to access or download the actual content of the media object.",
     )

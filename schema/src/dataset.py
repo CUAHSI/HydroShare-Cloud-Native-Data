@@ -1,4 +1,5 @@
 from .core import CoreMetadata
+from enum import Enum
 from typing import Optional, List, Union, Literal
 from pydantic import Field, HttpUrl
 from datetime import datetime
@@ -14,17 +15,24 @@ from .base import (
     Creator,
     CreativeWork,
     Provider,
+    MediaType,
 )
 
+from datavariable import Dimension, DataVariable
 
-class GenericDataset(CoreMetadata):
+
+class AdditionalType(str, Enum):
+    GEOGRAPHIC_FEATURE = 'GeographicFeature'
+    GEOGRAPHIC_RASTER = 'GeographicRaster'
+    MULTIDIMENSIONAL = 'MultiDimensional'
+    TABULAR = 'Tabular'
+
+class ScientificDataset(CoreMetadata):
     """
     A generic dataset extends the CoreMetadata class with a few additional fields and is designed to capture
     scientific file-level metadata.. It also overrides many of the required CoreMetadata fields to make them
     optional. It generally follows the design of the Schema.org Dataset class.
     """
-
-    # TODO: AssociatedMedia should be required.
 
     context: HttpUrl = Field(
         alias="@context",  # type: ignore
@@ -33,14 +41,31 @@ class GenericDataset(CoreMetadata):
         ),  # TODO: This is a placeholder for now.
         description="Specifies the vocabulary employed for understanding the structured data markup.",
     )
-    type: Literal["Dataset"] = Field(
+    type: Literal["ScientificDataset"] = Field(
         alias="@type",  # type: ignore
-        default="DataSet",
+        default="ScientificDataset",
         description="A body of structured information describing some topic(s) of interest.",
     )
-
-    variableMeasured: List[Union[str, PropertyValue]] = Field(
+                    
+    variableMeasured: List[Union[str, PropertyValue, DataVariable]] = Field(
         title="Variables measured", description="Measured variables."
+    )
+
+    dimensions: List[Dimension] = Field(
+        title="Dimensions",
+        description="Dimensions defined in the multi-dimensional dataset.",
+    )
+    
+    # redefine associatedMedia from "Core" as a required field
+    associatedMedia: Union[MediaType, List[MediaType]] = Field(
+        title="Resource content",
+        description="A media object that encodes this CreativeWork. This property is a synonym for encoding.",
+    )
+    
+    coordinates: Optional[List[DataVariable]] = Field(
+        default=None,
+        title="Coordinates",
+        description="Coordinate variables that provide values along a dimension",
     )
 
     includedInDataCatalog: Optional[DataCatalog] = Field(
@@ -61,8 +86,17 @@ class GenericDataset(CoreMetadata):
         title="Source organization",
         description="The organization that provided the data for this dataset.",
     )
-    ########################################
-    # make required CoreMetadata fields "Optional", but preserve the metadata defined in the parent class
+    additionalType: Optional[AdditionalType] = Field(
+        default=None,
+        title="Additional Type",
+        description = "Additional descriptive types associated with the ScientificDataset. This is typically used by applications to provide specialized funcationality for categories for content."
+    )
+    
+    # ---------------------------------------------
+    # make required CoreMetadata fields "Optional",
+    # but preserve the metadata defined in the
+    # parent class
+    # ---------------------------------------------
     name: Optional[str] = Field(
         default=None,
         title="Name or title",
