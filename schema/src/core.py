@@ -7,10 +7,11 @@ from pydantic import (
     HttpUrl,
 )
 
-from base import (
+from .base import (
     CreativeWork,
     SchemaBaseModel,
     Creator,
+    Contributor,
     Organization,
     Provider,
     PublisherOrganization,
@@ -49,6 +50,11 @@ class CoreMetadata(SchemaBaseModel):
         #            "enum": ["Dataset", "Notebook", "Software Source Code"],
         #        },
     )
+    additionalType: Optional[str] = Field(
+        title="Additional type",
+        description="An additional type for the resource. This can be used to further specify the type of the"
+                    " resource (e.g., Composite Resource).",
+    )
     name: str = Field(
         title="Name or title",
         description="A text string with a descriptive name or title for the resource.",
@@ -72,6 +78,9 @@ class CoreMetadata(SchemaBaseModel):
 
     creator: List[Union[Creator, Organization]] = Field(
         description="Person or Organization that created the resource."
+    )
+    contributor: List[Union[Contributor, Organization]] = Field(
+        description="Person or Organization that contributed to the resource."
     )
     dateCreated: datetime = Field(
         title="Date created", description="The date on which the resource was created."

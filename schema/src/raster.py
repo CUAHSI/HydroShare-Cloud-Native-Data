@@ -5,13 +5,11 @@ CUAHSI's extension to the SchemaOrg vocabulary to better encapsulate
 scientific raster metadata.
 """
 
-from typing import List, Union, Literal
-from pydantic import Field, field_validator, HttpUrl
-from base import PropertyValue, Place
-
-
-from dataset import GenericDataset
-from datavariable import BandVariable
+from typing import List, Union, Optional, Literal
+from pydantic import Field, field_validator, BaseModel, HttpUrl
+from .base import PropertyValue, Place
+from .dataset import GenericDataset
+from .datavariable import BandVariable
 
 
 class GeographicRaster(GenericDataset):
