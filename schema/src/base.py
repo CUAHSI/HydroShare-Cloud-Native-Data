@@ -206,14 +206,16 @@ class Contributor(Person):
         default=None,
     )
 
-
+from pydantic_core import core_schema as cs
 class FunderOrganization(Organization):
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+        cls, core_schema: cs.CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-        schema.update(schema, title="Funding Organization")
-        return schema
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+        json_schema['title'] = "Funding Organization"
+        return json_schema
 
     name: str = Field(description="Name of the organization.")
 
@@ -323,10 +325,14 @@ class SubjectOf(CreativeWork):
 class LanguageEnum(str, Enum):
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+        cls, core_schema: cs.CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-        schema.update(type="string", title="Language", description="")
-        return schema
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+        json_schema['type'] = "string"
+        json_schema['title'] = "Language"
+        json_schema['description'] = ""
+        return json_schema
 
     eng = "eng"
     esp = "esp"
@@ -335,12 +341,14 @@ class LanguageEnum(str, Enum):
 class InLanguageStr(str):
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+        cls, core_schema: cs.CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-        schema.update(
-            type="string", title="Other", description="Please specify another language."
-        )
-        return schema
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+        json_schema['type'] = "string"
+        json_schema['title'] = "Other"
+        json_schema['description'] = "Please specify another language."
+        return json_schema
 
 
 # TODO: should we allow a list of identifiers? Does this align with SchemaOrg?
@@ -349,12 +357,13 @@ class InLanguageStr(str):
 class IdentifierStr(str):
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, schema: JsonSchemaValue, handler: GetJsonSchemaHandler
+        cls, core_schema: cs.CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-        schema.update(
-            {"type": "array", "items": {"type": "string", "title": "Identifier"}}
-        )
-        return schema
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+        json_schema['type'] = "array"
+        json_schema['items'] = {"type": "string", "title": "Identifier"}
+        return json_schema
 
     @classmethod
     def __get_validators__(cls):
