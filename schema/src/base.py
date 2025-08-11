@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Optional, Union, Literal
+from typing import Any, List, Union, Literal
 
 
 from pydantic import (
@@ -92,10 +92,10 @@ class CreativeWork(SchemaBaseModel):
         "software source code, digital documents, etc.",
     )
     name: str = Field(description="Submission's name or title", title="Name or title")
-    description: Optional[str] = Field(
+    description: str = Field(
         description="The description of the creative work.", default=None
     )
-    url: Optional[HttpUrl] = Field(
+    url: HttpUrl = Field(
         title="URL",
         description="A URL to the creative work.",
         default=None,
@@ -109,10 +109,10 @@ class Person(SchemaBaseModel):
     name: str = Field(
         description="A string containing the full name of the person. Personal name format: Family Name, Given Name."
     )
-    email: Optional[EmailStr] = Field(
+    email: EmailStr = Field(
         description="A string containing an email address for the person.", default=None
     )
-    identifier: Optional[List[str]] = Field(
+    identifier: List[str] = Field(
         description="Unique identifiers for the person. Where identifiers can be encoded as URLs, enter URLs here.",
         default=None,
     )
@@ -127,12 +127,12 @@ class Organization(SchemaBaseModel):
         default="Organization",
     )
     name: str = Field(description="Name of the provider organization or repository.")
-    url: Optional[HttpUrl] = Field(
+    url: HttpUrl = Field(
         title="URL",
         description="A URL to the homepage for the organization.",
         default=None,
     )
-    address: Optional[str] = Field(
+    address: str = Field(
         description="Full address for the organization - e.g., “8200 Old Main Hill, Logan, UT 84322-8200”.",
         default=None,
     )  # Should address be a string or another constrained type?
@@ -148,7 +148,7 @@ class Affiliation(Organization):
 
 
 class Provider(Person):
-    identifier: Optional[str] = Field(
+    identifier: str = Field(
         description="ORCID identifier for the person.",
         json_schema_extra={
             "pattern": orcid_pattern,
@@ -157,18 +157,18 @@ class Provider(Person):
         },
         default=None,
     )
-    email: Optional[EmailStr] = Field(
+    email: EmailStr = Field(
         description="A string containing an email address for the provider.",
         default=None,
     )
-    affiliation: Optional[Affiliation] = Field(
+    affiliation: Affiliation = Field(
         description="The affiliation of the creator with the organization.",
         default=None,
     )
 
 
 class Creator(Person):
-    identifier: Optional[str] = Field(
+    identifier: str = Field(
         description="ORCID identifier for creator.",
         json_schema_extra={
             "pattern": orcid_pattern,
@@ -177,18 +177,18 @@ class Creator(Person):
         },
         default=None,
     )
-    email: Optional[EmailStr] = Field(
+    email: EmailStr = Field(
         description="A string containing an email address for the creator.",
         default=None,
     )
-    affiliation: Optional[Affiliation] = Field(
+    affiliation: Affiliation = Field(
         description="The affiliation of the creator with the organization.",
         default=None,
     )
 
 
 class Contributor(Person):
-    identifier: Optional[str] = Field(
+    identifier: str = Field(
         description="ORCID identifier for contributor.",
         json_schema_extra={
             "pattern": orcid_pattern,
@@ -197,11 +197,11 @@ class Contributor(Person):
         },
         default=None,
     )
-    email: Optional[EmailStr] = Field(
+    email: EmailStr = Field(
         description="A string containing an email address for the creator.",
         default=None,
     )
-    affiliation: Optional[Affiliation] = Field(
+    affiliation: Affiliation = Field(
         description="The affiliation of the creator with the organization.",
         default=None,
     )
@@ -222,7 +222,7 @@ class FunderOrganization(Organization):
 
 class PublisherOrganization(Organization):
     name: str = Field(description="Name of the publishing organization.")
-    url: Optional[HttpUrl] = Field(
+    url: HttpUrl = Field(
         title="URL",
         description="A URL to the homepage for the publisher organization or repository.",
         default=None,
@@ -276,20 +276,20 @@ class Published(DefinedTerm):
 
 
 class HasPart(CreativeWork):
-    url: Optional[HttpUrl] = Field(
+    url: HttpUrl = Field(
         title="URL", description="The URL address to the data resource.", default=None
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         description="Information about a related resource that is part of this resource.",
         default=None,
     )
 
 
 class IsPartOf(CreativeWork):
-    url: Optional[HttpUrl] = Field(
+    url: HttpUrl = Field(
         title="URL", description="The URL address to the data resource.", default=None
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         description="Information about a related resource that this resource is a "
         "part of - e.g., a related collection.",
         default=None,
@@ -297,25 +297,25 @@ class IsPartOf(CreativeWork):
 
 
 class MediaObjectPartOf(CreativeWork):
-    url: Optional[HttpUrl] = Field(
+    url: HttpUrl = Field(
         title="URL",
         description="The URL address to the related metadata document.",
         default=None,
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         description="Information about a related metadata document.", default=None
     )
 
 
 class SubjectOf(CreativeWork):
-    url: Optional[HttpUrl] = Field(
+    url: HttpUrl = Field(
         title="URL",
         description="The URL address that serves as a reference to access additional details related to the record. "
         "It is important to note that this type of metadata solely pertains to the record itself and "
         "may not necessarily be an integral component of the record, unlike the HasPart metadata.",
         default=None,
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         description="Information about a related resource that is about or describes this "
         "resource - e.g., a related metadata document describing the resource.",
         default=None,
@@ -397,12 +397,12 @@ class SpatialReference(SchemaBaseModel):
         title="SRS Type",
         description="Type of the spatial reference system, either Geographic or Projected.",
     )
-    code: Optional[str] = Field(
+    code: str = Field(
         title="Code",
         description="Code of the spatial reference system.",
         default=None,
     )
-    wktString: Optional[str] = Field(
+    wktString: str = Field(
         title="SRS WKT String",
         description="The string representation of the spatial reference system in Well-Known-Text format.",
         default=None,
@@ -429,16 +429,16 @@ class Grant(SchemaBaseModel):
         title="Name or title",
         description="A text string indicating the name or title of the grant or financial assistance.",
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         description="A text string describing the grant or financial assistance.",
         default=None,
     )
-    identifier: Optional[str] = Field(
+    identifier: str = Field(
         title="Funding identifier",
         description="Grant award number or other identifier.",
         default=None,
     )
-    funder: Optional[FunderOrganization] = Field(
+    funder: FunderOrganization = Field(
         description="The organization that provided the funding or sponsorship.",
         default=None,
     )
@@ -456,7 +456,7 @@ class TemporalCoverage(SchemaBaseModel):
             },
         },
     )
-    endDate: Optional[datetime] = Field(
+    endDate: datetime = Field(
         title="End date",
         description="A date/time object containing the instant corresponding to the termination of the time "
         "interval (ISO8601 formatted date - YYYY-MM-DDTHH:MM). If the ending date is left off, "
@@ -564,28 +564,28 @@ class PropertyValue(SchemaBaseModel):
         )
     )
 
-    propertyID: Optional[str] = Field(
+    propertyID: str = Field(
         title="Property ID", description="The ID of the property.", default=None
     )
-    unitCode: Optional[str] = Field(
+    unitCode: str = Field(
         title="Measurement unit",
         description="The unit of measurement for the value.",
         default=None,
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         description="A description of the property.", default=None
     )
-    minValue: Optional[float] = Field(
+    minValue: float = Field(
         title="Minimum value",
         description="The minimum allowed value for the property.",
         default=None,
     )
-    maxValue: Optional[float] = Field(
+    maxValue: float = Field(
         title="Maximum value",
         description="The maximum allowed value for the property.",
         default=None,
     )
-    measurementTechnique: Optional[str] = Field(
+    measurementTechnique: str = Field(
         title="Measurement technique",
         description="A technique or technology used in a measurement.",
         default=None,
@@ -602,20 +602,20 @@ class Place(SchemaBaseModel):
         default="Place",
         description="Represents the focus area of the record's content.",
     )
-    name: Optional[str] = Field(description="Name of the place.", default=None)
-    geo: Optional[Union[GeoCoordinates, GeoShape]] = Field(
+    name: str = Field(description="Name of the place.", default=None)
+    geo: Union[GeoCoordinates, GeoShape] = Field(
         description="Specifies the geographic coordinates of the place in the form of a point location, line, "
         "or area coverage extent.",
         default=None,
     )
 
-    additionalProperty: Optional[List[PropertyValue]] = Field(
+    additionalProperty: List[PropertyValue] = Field(
         title="Additional properties",
         default=None,
         description="Additional properties of the place.",
     )
 
-    srs: Optional[SpatialReference] = Field(
+    srs: SpatialReference = Field(
         description="The spatial reference system associated with the Place's geographic representation",
         default=None,
     )
@@ -639,7 +639,7 @@ class MediaObject(SchemaBaseModel):
         title="Content URL",
         description="The direct URL link to access or download the actual content of the media object.",
     )
-    encodingFormat: Optional[str] = Field(
+    encodingFormat: str = Field(
         title="Encoding format",
         description="Represents the specific file format in which the media is encoded.",
         default=None,
@@ -650,12 +650,12 @@ class MediaObject(SchemaBaseModel):
         "unit of measurement.",
     )
     name: str = Field(description="The name of the media object (file).")
-    sha256: Optional[str] = Field(
+    sha256: str = Field(
         title="SHA-256",
         description="The SHA-256 hash of the media object.",
         default=None,
     )
-    isPartOf: Optional[List[MediaObjectPartOf]] = Field(
+    isPartOf: List[MediaObjectPartOf] = Field(
         title="Is part of",
         description="Link to or citation for a related metadata document that this media object is a part of",
         default=None,
@@ -703,12 +703,12 @@ class DataDownload(MediaObject):
         default="DataDownload",
         description="All or part of a Dataset in downloadable form.",
     )
-    measurementMethod: Optional[Union[DefinedTerm, HttpUrl, str]] = Field(
+    measurementMethod: Union[DefinedTerm, HttpUrl, str] = Field(
         title="Measurement method",
         description="A subproperty of measurementTechnique that can be used for specifying specific methods, in particular via MeasurementMethodEnum.",
         default=None,
     )
-    measurementTechnique: Optional[Union[DefinedTerm, HttpUrl, str]] = Field(
+    measurementTechnique: Union[DefinedTerm, HttpUrl, str] = Field(
         title="Measurement technique",
         description="A technique, method or technology used in an Observation, StatisticalVariable or Dataset (or DataDownload, DataCatalog), corresponding to the method used for measuring the corresponding variable(s) (for datasets, described using variableMeasured; for Observation, a StatisticalVariable). Often but not necessarily each variableMeasured will have an explicit representation as (or mapping to) an property such as those defined in Schema.org, or other RDF vocabularies and 'knowledge graphs'. In that case the subproperty of variableMeasured called measuredProperty is applicable.",
         default=None,
@@ -731,43 +731,30 @@ MediaType = Union[MediaObject, DataDownload, VideoObject]
 
 
 class Dataset(CreativeWork):
-    measurementMethod: Optional[
-        Union[
-            HttpUrl,
-            List[HttpUrl],
-            DefinedTerm,
-            List[DefinedTerm],
-            str,
-            List[str],
-        ]
+    measurementMethod: Union[
+        HttpUrl,
+        List[HttpUrl],
+        DefinedTerm,
+        List[DefinedTerm],
+        str,
+        List[str],
     ] = None
-    issn: Optional[Union[str, List[str]]] = None
-    measurementTechnique: Optional[
-        Union[
-            str,
-            List[str],
-            HttpUrl,
-            List[HttpUrl],
-            DefinedTerm,
-            List[DefinedTerm],
-        ]
+    issn: Union[str, List[str]] = None
+    measurementTechnique: Union[
+        str,
+        List[str],
+        HttpUrl,
+        List[HttpUrl],
+        DefinedTerm,
+        List[DefinedTerm],
     ] = None
-    catalog: Optional[Union["DataCatalog", List["DataCatalog"]]] = None
-    variablesMeasured: Optional[
-        Union[str, List[str], "PropertyValue", List["PropertyValue"]]
-    ] = None
-    variableMeasured: Optional[
-        Union[
-            str,
-            List[str],
-            "PropertyValue",
-            List["PropertyValue"],
-        ]
-    ] = None
-    includedDataCatalog: Optional[Union["DataCatalog", List["DataCatalog"]]] = None
-    includedInDataCatalog: Optional[Union["DataCatalog", List["DataCatalog"]]] = None
-    datasetTimeInterval: Optional[Union[datetime, List[datetime]]] = None
-    distribution: Optional[Union["DataDownload", List["DataDownload"]]] = None
+    catalog: Union["DataCatalog", List["DataCatalog"]] = None
+    variablesMeasured: Union[str, List[str], "PropertyValue", List["PropertyValue"]] = None
+    variableMeasured: Union[str, List[str], "PropertyValue", List["PropertyValue"]] = None
+    includedDataCatalog: Union["DataCatalog", List["DataCatalog"]] = None
+    includedInDataCatalog: Union["DataCatalog", List["DataCatalog"]] = None
+    datasetTimeInterval: Union[datetime, List[datetime]] = None
+    distribution: Union["DataDownload", List["DataDownload"]] = None
 
 
 class DataCatalog(CreativeWork):
@@ -775,24 +762,20 @@ class DataCatalog(CreativeWork):
     A collection of datasets.
     """
 
-    measurementMethod: Optional[
-        Union[
-            HttpUrl,
-            List[HttpUrl],
-            DefinedTerm,
-            List[DefinedTerm],
-            str,
-            List[str],
-        ]
+    measurementMethod: Union[
+        HttpUrl,
+        List[HttpUrl],
+        DefinedTerm,
+        List[DefinedTerm],
+        str,
+        List[str],
     ] = None
-    dataset: Optional[Union[Dataset, List[Dataset]]] = None
-    measurementTechnique: Optional[
-        Union[
-            str,
-            List[str],
-            HttpUrl,
-            List[HttpUrl],
-            DefinedTerm,
-            List[DefinedTerm],
-        ]
+    dataset: Union[Dataset, List[Dataset]] = None
+    measurementTechnique: Union[
+        str,
+        List[str],
+        HttpUrl,
+        List[HttpUrl],
+        DefinedTerm,
+        List[DefinedTerm],
     ] = None
