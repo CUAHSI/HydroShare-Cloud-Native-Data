@@ -5,7 +5,7 @@ CUAHSI's extension to the SchemaOrg vocabulary to better encapsulate
 scientific data variable metadata.
 """
 
-from typing import Optional, Literal, Union
+from typing import Literal, Union
 from pydantic import Field, BaseModel, HttpUrl
 
 
@@ -35,7 +35,7 @@ class Dimension(BaseModel):
         title="Variable Shape",
         description="The shape of the variable",
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         default=None,
         title="Variable Description",
         description="The description of the variable measured",
@@ -64,32 +64,32 @@ class DataVariable(BaseModel):
         title="Variable Dimensions",
         description="The dimension names corresponding to the variable being measured",
     )
-    description: Optional[str] = Field(
+    description: str = Field(
         default=None,
         title="Variable Description",
         description="The description of the variable measured",
     )
-    dataType: Optional[str] = Field(
+    dataType: str = Field(
         default=None,
         title="The data type of the variable",
         description="The data type of the variable measured",
     )
-    unit: Optional[str] = Field(
+    unit: str = Field(
         default=None,
         title="Variable Unit",
         description="The unit of the variable measured",
     )
-    minValue: Optional[Union[float,str]] = Field(
+    minValue: Union[float,str] = Field(
         title="Minimum Value",
         description="The minimum value in the raster grid",
         default=None,
     )
-    maxValue: Optional[Union[float,str]] = Field(
+    maxValue: Union[float,str] = Field(
         title="Maximum Value",
         description="The maximum value in the raster grid",
         default=None,
     )
-    noDataValue: Optional[Union[float,str]] = Field(
+    noDataValue: Union[float,str] = Field(
         title="No Data Value",
         description="The numerical value used to represent null data in the raster grid",
         default=None,

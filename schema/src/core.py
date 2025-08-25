@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import List, Union
 
 
 from pydantic import (
@@ -53,10 +53,11 @@ class CoreMetadata(SchemaBaseModel):
         #            "enum": ["Dataset", "Notebook", "Software Source Code"],
         #        },
     )
-    additionalType: Optional[str] = Field(
+    additionalType: str = Field(
         title="Additional type",
         description="An additional type for the resource. This can be used to further specify the type of the"
                     " resource (e.g., Composite Resource).",
+        default=None,
     )
     name: str = Field(
         title="Name or title",
@@ -100,60 +101,60 @@ class CoreMetadata(SchemaBaseModel):
     ###################
     # OPTIONAL FIELDS #
     ###################
-    contributor: Optional[List[Union[Contributor, Organization]]] = Field(
+    contributor: List[Union[Contributor, Organization]] = Field(
         description="Person or Organization that contributed to the resource.",
         default=None
     )
-    publisher: Optional[PublisherOrganization] = Field(
+    publisher: PublisherOrganization = Field(
         title="Publisher",
         description="Where the resource is permanently published, indicated the repository, service provider,"
         " or organization that published the resource - e.g., CUAHSI HydroShare."
         " This may be the same as Provider.",
         default=None,
     )
-    datePublished: Optional[datetime] = Field(
+    datePublished: datetime = Field(
         title="Date published",
         description="Date of first publication for the resource.",
         default=None,
     )
-    subjectOf: Optional[List[SubjectOf]] = Field(
+    subjectOf: List[SubjectOf] = Field(
         title="Subject of",
         description="Link to or citation for a related resource that is about or describes this resource"
         " - e.g., a journal paper that describes this resource or a related metadata document "
         "describing the resource.",
         default=None,
     )
-    version: Optional[str] = Field(
+    version: str = Field(
         description="A text string indicating the version of the resource.",
         default=None,
     )  # TODO find something better than float for number
-    inLanguage: Optional[Union[LanguageEnum, InLanguageStr]] = Field(
+    inLanguage: Union[LanguageEnum, InLanguageStr] = Field(
         title="Language",
         description="The language of the content of the resource.",
         default=None,
     )
-    creativeWorkStatus: Optional[Union[Draft, Incomplete, Obsolete, Published]] = Field(
+    creativeWorkStatus: Union[Draft, Incomplete, Obsolete, Published] = Field(
         title="Resource status",
         description="The status of this resource in terms of its stage in a lifecycle. "
         "Example terms include Incomplete, Draft, Published, and Obsolete.",
         default=None,
     )
-    dateModified: Optional[datetime] = Field(
+    dateModified: datetime = Field(
         title="Date modified",
         description="The date on which the resource was most recently modified or updated.",
         default=None,
     )
-    funding: Optional[List[Grant]] = Field(
+    funding: List[Grant] = Field(
         description="A Grant or monetary assistance that directly or indirectly provided funding or sponsorship "
         "for creation of the resource.",
         default=None,
     )
-    temporalCoverage: Optional[TemporalCoverage] = Field(
+    temporalCoverage: TemporalCoverage = Field(
         title="Temporal coverage",
         description="The time period that applies to all of the content within the resource.",
         default=None,
     )
-    spatialCoverage: Optional[Place] = Field(
+    spatialCoverage: Place = Field(
         description="The spatialCoverage of a CreativeWork indicates the place(s) which are the focus of the content. "
         "It is a sub property of contentLocation intended primarily for more technical and "
         "detailed materials. For example with a Dataset, it indicates areas that the dataset "
@@ -161,30 +162,30 @@ class CoreMetadata(SchemaBaseModel):
         "place: the state of New York.",
         default=None,
     )
-    hasPart: Optional[List[HasPart]] = Field(
+    hasPart: List[HasPart] = Field(
         title="Has part",
         description="Link to or citation for a related resource that is part of this resource.",
         default=None,
     )
-    isPartOf: Optional[List[IsPartOf]] = Field(
+    isPartOf: List[IsPartOf] = Field(
         title="Is part of",
         description="Link to or citation for a related resource that this resource is a "
         "part of - e.g., a related collection.",
         default=None,
     )
-    additionalProperty: Optional[List[PropertyValue]] = Field(
+    additionalProperty: List[PropertyValue] = Field(
         title="Additional properties",
         default=None,
         description="Additional properties of the place.",
     )
 
     # using MediaType here to allow for MediaObject and its subclasses (e.g., DataDownload, VideoObject)
-    associatedMedia: Optional[Union[MediaType, List[MediaType]]] = Field(
+    associatedMedia: Union[MediaType, List[MediaType]] = Field(
         title="Resource content",
         description="A media object that encodes this CreativeWork. This property is a synonym for encoding.",
         default=None,
     )
-    citation: Optional[List[str]] = Field(
+    citation: List[str] = Field(
         title="Citation",
         description="A bibliographic citation for the resource.",
         default=None,
