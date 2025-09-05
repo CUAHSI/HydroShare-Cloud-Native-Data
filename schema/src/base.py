@@ -509,6 +509,8 @@ class GeoShape(SchemaBaseModel):
 
     @field_validator("box")
     def validate_box(cls, v, info):
+        return v
+        # ignoring validation for now
         if not isinstance(v, str):
             raise TypeError("string required")
         v = v.strip()

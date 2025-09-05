@@ -60,6 +60,7 @@ class ScientificDataset(CoreMetadata):
     associatedMedia: Union[MediaType, List[MediaType]] = Field(
         title="Resource content",
         description="A media object that encodes this CreativeWork. This property is a synonym for encoding.",
+        default=[]
     )
     
     coordinates: Optional[List[DataVariable]] = Field(
