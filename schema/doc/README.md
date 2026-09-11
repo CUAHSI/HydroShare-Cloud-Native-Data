@@ -9,19 +9,32 @@ HydroShare provides a standard set of metadata elements for describing scientifi
 
 # Metadata Hierarchy
 
-Common "core" metadata is used to capture the highest-level of metadata relevant to scientific product. This could represent a scientific study, a body of work, a grouping of datasets, a single data file, etc. We will use the SchemaOrg hierarchy of “Thing” and “CreativeWork” to capture this wide range of possibilities (schema.org). The “Core” element in the figure above and largely consists of high-level metadata such as name, url, authorship, etc. Additional information can be provided by leveraging the DataSet subclass of CreativeWork. This is useful for encapsulating metadata for a wide variety of scientific content, however this can also be extended to provide specific metadata to enable advanced features or system behaviours. Below is an overview of the relationships between these classes.
+Common "core" metadata is used to capture the highest-level of metadata relevant to scientific product. This could represent a scientific study, a body of work, a grouping of datasets, a single data file, etc. We will use the SchemaOrg hierarchy of “Thing” and “CreativeWork” to capture this wide range of possibilities (schema.org). The “Core” element in the figure above and largely consists of high-level metadata such as name, url, authorship, etc. Additional information can be provided by leveraging the `ScientificDataset` subclass of CreativeWork. This is useful for encapsulating metadata for a wide variety of scientific content, however this can also be extended to provide specific metadata to enable advanced features or system behaviours. Below is an overview of the relationships between these classes.
+
+`ScientificDataset` does not use separate subclasses for each data format. Instead, a
+single `ScientificDataset` type is used, and its `additionalType` property (a
+controlled vocabulary defined in `schema/src/dataset.py`) indicates which format
+family a given record represents: `GeographicFeature` (vector), `GeographicRaster`
+(raster), `MultiDimensional` (e.g., NetCDF/Zarr), or `Tabular` (e.g., CSV/Parquet).
 
 ```mermaid
 flowchart LR
-  Core --> Dataset
+  Core --> ScientificDataset
   Core --> id1(Software Source Code)
-  Dataset --> Vector
-  Dataset --> Raster
-  Dataset --> Geopackage
-  Dataset --> MultiDimensional
+  ScientificDataset -->|additionalType| GeographicFeature
+  ScientificDataset -->|additionalType| GeographicRaster
+  ScientificDataset -->|additionalType| MultiDimensional
+  ScientificDataset -->|additionalType| Tabular
   id1(Software Source Code) --> id2(Jupyter Notebook)
 
   
 
 ```
+
+See [Core Metadata](core.md) for the base fields shared by all records,
+[Scientific Dataset Metadata](dataset.md) for the `ScientificDataset` extension,
+[Data Variable and Dimension Metadata](datavariable.md) for how variables/dimensions
+are described within a `ScientificDataset`, and
+[Example Implementations](examples.md) for worked examples referencing the notebooks
+in `schema/notebooks/`.
 

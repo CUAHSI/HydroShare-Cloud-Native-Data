@@ -13,6 +13,14 @@ Keep `.ai/context.md` up to date: if you add, move, or remove major
 directories/components, or change core conventions, update that file in the
 same change.
 
+## Scope of Analysis
+
+When answering questions or exploring the repository, **ignore files that are
+not tracked in version control** (e.g. untracked/gitignored files, build
+artifacts, `__pycache__`, `.ipynb_checkpoints`, local outputs, `.venv`, etc.)
+unless the user explicitly asks about them. Use `git ls-files` / `git status`
+to distinguish tracked from untracked content when in doubt.
+
 ## Unix Philosophy
 
 Favor small, composable pieces over monolithic ones:

@@ -98,4 +98,6 @@ onto common scientific data formats when building a [`ScientificDataset`](datase
 
 See `schema/src/dataset.py` for the `AdditionalType` enum (`GeographicFeature`,
 `GeographicRaster`, `MultiDimensional`, `Tabular`) used on `ScientificDataset` to
-indicate which of these format families a given record represents.
+indicate which of these format families a given record represents. See
+[Example Implementations](examples.md) for the full extraction code and generated
+JSON-LD for each of these notebooks.

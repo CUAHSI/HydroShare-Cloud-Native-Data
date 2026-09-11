@@ -31,6 +31,8 @@ for **required** and `0,1` or `0+` for **optional** in the Cardinality column of
 |[hasPart](#has-part-and-is-part-of)|CreativeWork|CreativeWork|0+| A creative work that is part of this record|
 |[isPartOf](#has-part-and-is-part-of)|CreativeWork|CreativeWork \| URL |0+| A creative work that this record (in some sense) is part of|
 |[citation](#citation)|CreativeWork|CreativeWork \| Text|0+|A citation or reference to another creative work|
+|[additionalType](#additional-type)|Thing|Text|0,1|An additional type for the record used to further specify its type (e.g., Composite Resource)|
+|[additionalProperty](#additional-property)|Thing|PropertyValue|0+|A property-value pair representing an additional characteristic of the record that is not captured by another Schema.Org property|
 
 The following examples demonstrate how each one of these properties may
 be implemented in JSON+LD. Note that there are several properties omitted from each
@@ -856,3 +858,34 @@ In future versions, `citation` can also be expressed as a `creativework` to expr
 
 
 
+
+### Additional Type
+
+`additionalType` is an optional text field used to further specify the type of a record beyond its base `@type` (e.g., `CreativeWork`). This is useful for distinguishing between records that share the same Schema.Org type but represent different kinds of content within HydroShare, such as a Composite Resource versus a Collection Resource.
+
+``` json
+{
+  "additionalType": "Composite Resource"
+}
+```
+
+### Additional Property
+
+[Schema:additionalProperty](https://schema.org/additionalProperty) represents a property-value pair, using the `propertyID` and `value` properties from Schema.org's `PropertyValue` type, designed to accommodate supplementary information for a record when no direct match exists within Schema.org vocabulary. Both `propertyID` and `value` are user-defined.
+
+``` json
+{
+    "additionalProperty": [
+        {
+            "@type": "PropertyValue",
+            "propertyID": "Feature Count",
+            "value": 7
+        },
+        {
+            "@type": "PropertyValue",
+            "propertyID": "Field Count",
+            "value": 10
+        }
+    ]
+}
+```
