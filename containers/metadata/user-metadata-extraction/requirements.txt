@@ -1,0 +1,9 @@
+hsmodels
+hsclient
+json5
+pydantic
+pydantic-settings
+typer
+python-dotenv
+requests
+beanie

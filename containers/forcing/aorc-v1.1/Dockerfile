@@ -9,5 +9,10 @@ RUN pip install \
     geopandas \
     rioxarray \
     boto3 \
-    netcdf4 
+    netcdf4 \
+    typer 
 
+RUN mkdir /input /output 
+COPY entry.py /srv/entry.py
+WORKDIR /srv
+ENTRYPOINT ["python", "entry.py"]

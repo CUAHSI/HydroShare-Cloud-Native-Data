@@ -1,0 +1,661 @@
+{
+  "$defs": {
+    "Affiliation": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "Organization",
+          "default": "Organization",
+          "enum": [
+            "Organization"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the organization the creator is affiliated with.",
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "default": null,
+          "description": "A URL to the homepage for the organization.",
+          "errorMessage": {
+            "pattern": "must match format \"url\""
+          },
+          "maxLength": 2083,
+          "minLength": 1,
+          "pattern": "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$",
+          "title": "URL",
+          "type": "string"
+        },
+        "address": {
+          "default": null,
+          "description": "Full address for the organization - e.g., \u201c8200 Old Main Hill, Logan, UT 84322-8200\u201d.",
+          "title": "Address",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Affiliation",
+      "type": "object"
+    },
+    "CreativeWork": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "CreativeWork",
+          "default": "CreativeWork",
+          "description": "Submission type can include various forms of content, such as datasets, software source code, digital documents, etc.",
+          "enum": [
+            "CreativeWork"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "Submission's name or title",
+          "title": "Name or title",
+          "type": "string"
+        },
+        "description": {
+          "default": null,
+          "description": "The description of the creative work.",
+          "title": "Description",
+          "type": "string"
+        },
+        "url": {
+          "default": null,
+          "description": "A URL to the creative work.",
+          "errorMessage": {
+            "pattern": "must match format \"url\""
+          },
+          "maxLength": 2083,
+          "minLength": 1,
+          "pattern": "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$",
+          "title": "URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "CreativeWork",
+      "type": "object"
+    },
+    "FunderOrganization": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "Organization",
+          "default": "Organization",
+          "enum": [
+            "Organization"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the organization.",
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "default": null,
+          "description": "A URL to the homepage for the organization.",
+          "errorMessage": {
+            "pattern": "must match format \"url\""
+          },
+          "maxLength": 2083,
+          "minLength": 1,
+          "pattern": "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$",
+          "title": "URL",
+          "type": "string"
+        },
+        "address": {
+          "default": null,
+          "description": "Full address for the organization - e.g., \u201c8200 Old Main Hill, Logan, UT 84322-8200\u201d.",
+          "title": "Address",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Funding Organization",
+      "type": "object"
+    },
+    "GeoCoordinates": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "GeoCoordinates",
+          "default": "GeoCoordinates",
+          "description": "Geographic coordinates that represent a specific location on the Earth's surface. GeoCoordinates typically consists of two components: latitude and longitude.",
+          "enum": [
+            "GeoCoordinates"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "latitude": {
+          "description": "Represents the angular distance of a location north or south of the equator, measured in degrees and ranges from -90 to +90 degrees.",
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "description": "Represents the angular distance of a location east or west of the Prime Meridian, measured in degrees and ranges from -180 to +180 degrees.",
+          "title": "Longitude",
+          "type": "number"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "title": "GeoCoordinates",
+      "type": "object"
+    },
+    "GeoShape": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "GeoShape",
+          "default": "GeoShape",
+          "description": "A structured representation that describes the coordinates of a geographic feature.",
+          "enum": [
+            "GeoShape"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "validate_bbox": {
+          "default": true,
+          "description": "Flag to turn on/off bounding box validation",
+          "title": "Validate Bbox",
+          "type": "boolean"
+        },
+        "box": {
+          "description": "A box is a rectangular region defined by a pair of coordinates representing the southwest and northeast corners of the box.",
+          "title": "Box",
+          "type": "string"
+        }
+      },
+      "required": [
+        "box"
+      ],
+      "title": "GeoShape",
+      "type": "object"
+    },
+    "Grant": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "Grant",
+          "default": "Grant",
+          "description": "This metadata represents details about a grant or financial assistance provided to an individual(s) or organization(s) for supporting the work related to the record.",
+          "enum": [
+            "Grant"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "A text string indicating the name or title of the grant or financial assistance.",
+          "title": "Name or title",
+          "type": "string"
+        },
+        "description": {
+          "default": null,
+          "description": "A text string describing the grant or financial assistance.",
+          "title": "Description",
+          "type": "string"
+        },
+        "identifier": {
+          "default": null,
+          "description": "Grant award number or other identifier.",
+          "title": "Funding identifier",
+          "type": "string"
+        },
+        "funder": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/FunderOrganization"
+            }
+          ],
+          "default": null,
+          "description": "The organization that provided the funding or sponsorship."
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Grant",
+      "type": "object"
+    },
+    "Organization": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "Organization",
+          "default": "Organization",
+          "enum": [
+            "Organization"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the provider organization or repository.",
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "default": null,
+          "description": "A URL to the homepage for the organization.",
+          "errorMessage": {
+            "pattern": "must match format \"url\""
+          },
+          "maxLength": 2083,
+          "minLength": 1,
+          "pattern": "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$",
+          "title": "URL",
+          "type": "string"
+        },
+        "address": {
+          "default": null,
+          "description": "Full address for the organization - e.g., \u201c8200 Old Main Hill, Logan, UT 84322-8200\u201d.",
+          "title": "Address",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Organization",
+      "type": "object"
+    },
+    "Place": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "Place",
+          "default": "Place",
+          "description": "Represents the focus area of the record's content.",
+          "enum": [
+            "Place"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "default": null,
+          "description": "Name of the place.",
+          "title": "Name",
+          "type": "string"
+        },
+        "geo": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeoCoordinates"
+            },
+            {
+              "$ref": "#/$defs/GeoShape"
+            }
+          ],
+          "default": null,
+          "description": "Specifies the geographic coordinates of the place in the form of a point location, line, or area coverage extent.",
+          "title": "Geo"
+        },
+        "additionalProperty": {
+          "default": null,
+          "description": "Additional properties of the place.",
+          "items": {
+            "$ref": "#/$defs/PropertyValue"
+          },
+          "title": "Additional properties",
+          "type": "array"
+        },
+        "srs": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SpatialReference"
+            }
+          ],
+          "default": null,
+          "description": "The spatial reference system associated with the Place's geographic representation"
+        }
+      },
+      "title": "Place",
+      "type": "object"
+    },
+    "PropertyValue": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "PropertyValue",
+          "default": "PropertyValue",
+          "description": "A property-value pair.",
+          "enum": [
+            "PropertyValue"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name of the property.",
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "description": "The value of the property.",
+          "title": "Value"
+        },
+        "propertyID": {
+          "default": null,
+          "description": "The ID of the property.",
+          "title": "Property ID",
+          "type": "string"
+        },
+        "unitCode": {
+          "default": null,
+          "description": "The unit of measurement for the value.",
+          "title": "Measurement unit",
+          "type": "string"
+        },
+        "description": {
+          "default": null,
+          "description": "A description of the property.",
+          "title": "Description",
+          "type": "string"
+        },
+        "minValue": {
+          "default": null,
+          "description": "The minimum allowed value for the property.",
+          "title": "Minimum value",
+          "type": "number"
+        },
+        "maxValue": {
+          "default": null,
+          "description": "The maximum allowed value for the property.",
+          "title": "Maximum value",
+          "type": "number"
+        },
+        "measurementTechnique": {
+          "default": null,
+          "description": "A technique or technology used in a measurement.",
+          "title": "Measurement technique",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "PropertyValue",
+      "type": "object"
+    },
+    "Provider": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "Person",
+          "default": "Person",
+          "description": "A person.",
+          "enum": [
+            "Person"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "A string containing the full name of the person. Personal name format: Family Name, Given Name.",
+          "title": "Name",
+          "type": "string"
+        },
+        "email": {
+          "default": null,
+          "description": "A string containing an email address for the provider.",
+          "format": "email",
+          "title": "Email",
+          "type": "string"
+        },
+        "identifier": {
+          "default": null,
+          "description": "ORCID identifier for the person.",
+          "errorMessage": {
+            "pattern": "must match the ORCID pattern. e.g. '0000-0001-2345-6789'"
+          },
+          "options": {
+            "placeholder": "e.g. '0000-0001-2345-6789'"
+          },
+          "pattern": "\\b\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]\\b",
+          "title": "Identifier",
+          "type": "string"
+        },
+        "affiliation": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Affiliation"
+            }
+          ],
+          "default": null,
+          "description": "The affiliation of the creator with the organization."
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Provider",
+      "type": "object"
+    },
+    "SpatialReference": {
+      "additionalProperties": true,
+      "properties": {
+        "@type": {
+          "const": "SpatialReference",
+          "default": "SpatialReference",
+          "description": "The spatial reference system associated with the Place's geographic representation.",
+          "enum": [
+            "SpatialReference"
+          ],
+          "title": "@Type",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the spatial reference system.",
+          "title": "Name",
+          "type": "string"
+        },
+        "srsType": {
+          "description": "Type of the spatial reference system, either Geographic or Projected.",
+          "title": "SRS Type",
+          "type": "string"
+        },
+        "code": {
+          "default": null,
+          "description": "Code of the spatial reference system.",
+          "title": "Code",
+          "type": "string"
+        },
+        "wktString": {
+          "default": null,
+          "description": "The string representation of the spatial reference system in Well-Known-Text format.",
+          "title": "SRS WKT String",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "srsType"
+      ],
+      "title": "SpatialReference",
+      "type": "object"
+    },
+    "TemporalCoverage": {
+      "additionalProperties": true,
+      "properties": {
+        "startDate": {
+          "description": "A date/time object containing the instant corresponding to the commencement of the time interval (ISO8601 formatted date - YYYY-MM-DDTHH:MM).",
+          "errorMessage": {
+            "formatMaximum": "must be lesser than or equal to End date"
+          },
+          "format": "date-time",
+          "formatMaximum": {
+            "$data": "1/endDate"
+          },
+          "title": "Start date",
+          "type": "string"
+        },
+        "endDate": {
+          "default": null,
+          "description": "A date/time object containing the instant corresponding to the termination of the time interval (ISO8601 formatted date - YYYY-MM-DDTHH:MM). If the ending date is left off, that means the temporal coverage is ongoing.",
+          "errorMessage": {
+            "formatMinimum": "must be greater than or equal to Start date"
+          },
+          "format": "date-time",
+          "formatMinimum": {
+            "$data": "1/startDate"
+          },
+          "title": "End date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "startDate"
+      ],
+      "title": "TemporalCoverage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "default": null,
+      "description": "A text string with a descriptive name or title for the resource.",
+      "title": "Name or title",
+      "type": "string"
+    },
+    "description": {
+      "default": null,
+      "description": "A text string containing a description/abstract for the resource.",
+      "title": "Description or abstract",
+      "type": "string"
+    },
+    "keywords": {
+      "default": null,
+      "description": "Keywords or tags used to describe the dataset, delimited by commas.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Keywords",
+      "type": "array"
+    },
+    "license": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CreativeWork"
+        },
+        {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "type": "string"
+        }
+      ],
+      "default": null,
+      "description": "A license document that applies to the resource.",
+      "title": "License"
+    },
+    "provider": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Organization"
+        },
+        {
+          "$ref": "#/$defs/Provider"
+        }
+      ],
+      "default": null,
+      "description": "The repository, service provider, organization, person, or service performer that provides access to the resource.",
+      "title": "Provider"
+    },
+    "additionalProperty": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "$ref": "#/$defs/PropertyValue"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/PropertyValue"
+          },
+          "type": "array"
+        }
+      ],
+      "default": null,
+      "description": "Additional properties of the dataset that don't fit into schema org.",
+      "title": "Additional properties"
+    },
+    "funding": {
+      "default": null,
+      "description": "A Grant or monetary assistance that directly or indirectly provided funding or sponsorship for creation of the resource.",
+      "items": {
+        "$ref": "#/$defs/Grant"
+      },
+      "title": "Funding",
+      "type": "array"
+    },
+    "temporalCoverage": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/TemporalCoverage"
+        }
+      ],
+      "default": null,
+      "description": "The time period that applies to all of the content within the resource.",
+      "title": "Temporal coverage"
+    },
+    "spatialCoverage": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Place"
+        }
+      ],
+      "default": null,
+      "description": "The spatialCoverage of a CreativeWork indicates the place(s) which are the focus of the content. It is a sub property of contentLocation intended primarily for more technical and detailed materials. For example with a Dataset, it indicates areas that the dataset describes: a dataset of New York weather would have spatialCoverage which was the place: the state of New York."
+    },
+    "citation": {
+      "default": null,
+      "description": "A bibliographic citation for the resource.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citation",
+      "type": "array"
+    }
+  },
+  "title": "EditableScientificDataset",
+  "type": "object"
+}
